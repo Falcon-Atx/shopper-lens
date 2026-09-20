@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Shopper Lens",
+  "version": "0.1.0",
+  "description": "Understand visible sponsored placements, recognize verified Amazon brands, and compare displayed search results locally.",
+  "action": {
+    "default_title": "Shopper Lens — how it works",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": ["https://www.amazon.com/s?*", "https://www.amazon.com/s/*"],
+    "js": ["parser.js", "content.js"],
+    "css": ["content.css"],
+    "run_at": "document_idle",
+    "all_frames": false
+  }]
+}

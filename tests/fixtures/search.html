@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shopper Lens · synthetic search demonstration</title>
+  <link rel="stylesheet" href="/extension/content.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #172332; background: #f6f7f9; }
+    .demo-head { padding: 24px 7vw; background: #122f37; color: white; }
+    .demo-head h1 { margin: 0 0 8px; font-size: 25px; }
+    .demo-head p { margin: 0; max-width: 850px; color: #d6e9e7; }
+    main { margin: 28px auto 140px; width: min(1120px,86vw); }
+    .notice { padding: 15px 20px; border: 1px solid #bbd3d0; background: #edf6f4; border-radius: 10px; }
+    .s-search-results { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; margin-top: 24px; }
+    [data-component-type="s-search-result"] { background: white; border: 1px solid #d5dce1; border-radius: 12px; overflow: hidden; padding: 18px; }
+    .product-art { height: 140px; border-radius: 8px; margin: 0 0 15px; background: #ebf0f2; display: grid; place-items: center; color: #355862; font-size: 48px; }
+    h2 { font-size: 18px; line-height: 1.4; margin: 8px 0; }
+    h2.a-size-mini { font-size: 13px; font-weight: 500; color: #53666d; }
+    a { color: #125b78; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .s-sponsored-label-info-icon { font-size: 12px; color: #54626b; }
+    .a-icon-alt { color: #805313; }
+    .a-price { font-size: 25px; font-weight: 600; }
+    .a-text-price { text-decoration: line-through; font-size: 14px; font-weight: 400; color: #68757b; }
+    .a-offscreen { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+    .a-size-base { display: block; color: #54626b; margin: 8px 0; }
+    .badge { display: inline-block; font-size: 11px; background: #e2eff4; border-radius: 3px; padding: 2px 6px; }
+    .widget { padding: 18px; margin-top: 20px; border: 1px dashed #809297; border-radius: 8px; background: #eef2f4; }
+    .demo-actions { margin-top: 22px; }
+    .demo-actions button { padding: 10px 14px; border: 1px solid #759899; border-radius: 6px; background: white; color: #173e45; cursor: pointer; }
+    @media(max-width: 800px) { .s-search-results { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media(max-width: 520px) { .s-search-results { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="demo-head"><h1>Shopper Lens test page</h1><p>Synthetic results, fictional products and prices. This page demonstrates behavior; it is not an Amazon page and does not substantiate real product claims.</p></header>
+  <main>
+    <p class="notice">Try Show, Dim and Hide in Shopper Lens. Select up to four visible products for comparison, restore the page, or add a result to test updates. These cards intentionally include uncertain ownership and missing data.</p>
+    <div class="s-search-results">
+      <div id="title-only" data-component-type="s-search-result" data-asin="DEMO000001">
+        <div class="product-art" aria-hidden="true">↔</div>
+        <span class="s-sponsored-label-info-icon">Sponsored</span>
+        <div data-cy="title-recipe"><a href="https://www.amazon.com/dp/DEMO000001"><h2>Amazon Basics USB-C charging cable — fictional test item</h2></a></div>
+        <div><a aria-label="4.7 out of 5 stars" href="#ratings-1"><i class="a-icon-star-small"><span class="a-icon-alt">4.7 out of 5 stars</span></i></a> <a aria-label="88,433 ratings" href="#ratings-1"><span>(88,433)</span></a></div>
+        <div><span class="a-price"><span class="a-offscreen">$12.99</span><span aria-hidden="true">$12.99</span></span> <span class="a-price a-text-price" data-a-strike="true"><span class="a-offscreen">$19.99</span><span aria-hidden="true">$19.99</span></span></div>
+        <div data-cy="title-differentiators"><span class="a-size-base">6 feet · USB-C to USB-C · 2 pack</span></div>
+      </div>
+      <div id="owned" data-component-type="s-search-result" data-asin="DEMO000002">
+        <div class="product-art" aria-hidden="true">◒</div>
+        <div data-cy="title-recipe"><div class="a-row"><h2 class="a-size-mini s-line-clamp-1">Amazon Essentials</h2></div><a href="https://www.amazon.com/dp/DEMO000002"><h2>Cotton crewneck T-shirt — fictional test item</h2></a></div>
+        <div><a aria-label="4.3 out of 5 stars" href="#ratings-2"><span class="a-icon-alt">4.3 out of 5 stars</span></a> <a aria-label="126 ratings" href="#ratings-2"><span>(126)</span></a></div>
+        <div><span class="a-price"><span class="a-offscreen">$18.40</span><span aria-hidden="true">$18.40</span></span></div>
+        <div data-cy="title-differentiators"><span class="a-size-base">100% cotton · Navy · Medium</span></div>
+      </div>
+      <div id="third-party" data-component-type="s-search-result" data-asin="DEMO000003">
+        <div class="product-art" aria-hidden="true">⌁</div>
+        <span hidden class="s-sponsored-label-info-icon">Sponsored</span>
+        <span class="badge">Amazon's Choice</span>
+        <div data-cy="title-recipe"><div class="a-row"><h2 class="a-size-mini s-line-clamp-1">Cedar Sample</h2></div><a href="https://www.amazon.com/dp/DEMO000003"><h2>Case compatible with Amazon Basics cable — fictional test item</h2></a></div>
+        <div><a aria-label="4.1 out of 5 stars" href="#ratings-3"><span class="a-icon-alt">4.1 out of 5 stars</span></a> <a aria-label="83 ratings" href="#ratings-3"><span>(83)</span></a></div>
+        <div><span class="a-price"><span class="a-offscreen">$9.49</span><span aria-hidden="true">$9.49</span></span></div>
+        <div data-cy="title-differentiators"><span class="a-size-base">Sold by Amazon · Silicone · 1 pack</span></div>
+      </div>
+      <div id="range" data-component-type="s-search-result" data-asin="DEMO000004">
+        <div class="product-art" aria-hidden="true">▱</div>
+        <div data-cy="title-recipe"><a href="https://www.amazon.com/dp/DEMO000004"><h2>Desk organizer with several sizes — fictional test item</h2></a></div>
+        <div><span class="a-price"><span class="a-offscreen">$15.00</span><span aria-hidden="true">$15.00</span></span> – <span class="a-price"><span class="a-offscreen">$25.00</span><span aria-hidden="true">$25.00</span></span></div>
+        <div data-cy="title-differentiators"><span class="a-size-base">Small through Large · 3 colors</span></div>
+      </div>
+      <div id="no-price" data-component-type="s-search-result" data-asin="DEMO000005">
+        <div class="product-art" aria-hidden="true">▥</div>
+        <div data-cy="title-recipe"><a href="https://www.amazon.com/dp/DEMO000005"><h2>Rechargeable batteries — fictional test item</h2></a></div>
+        <div><span class="a-size-base">See options</span> <span class="a-price a-text-price" data-a-strike="true"><span class="a-offscreen">$39.00</span><span aria-hidden="true">$39.00</span></span></div>
+        <span class="a-size-base">Multiple buying choices</span>
+      </div>
+      <div id="ordinary" data-component-type="s-search-result" data-asin="DEMO000006">
+        <div class="product-art" aria-hidden="true">◉</div>
+        <div data-cy="title-recipe"><a href="https://www.amazon.com/dp/DEMO000006"><h2>Compact desk lamp — fictional test item</h2></a></div>
+        <div><a aria-label="4.6 out of 5 stars" href="#ratings-6"><span class="a-icon-alt">4.6 out of 5 stars</span></a> <a aria-label="9 ratings" href="#ratings-6"><span>(9)</span></a></div>
+        <div><span class="a-price"><span class="a-offscreen">$19.99</span><span aria-hidden="true">$19.99</span></span></div>
+        <div data-cy="title-differentiators"><span class="a-size-base">Warm white · USB power · Touch control</span></div>
+      </div>
+    </div>
+    <div id="widget" class="widget s-result-item" data-component-type="sp-sponsored-result"><span class="s-sponsored-label-info-icon">Sponsored</span><h2>Example sponsored brand banner</h2><p>This is not a standard product card; it should receive a placement-level label and follow the sponsored control.</p></div>
+    <div hidden><div id="hidden-card" data-component-type="s-search-result" data-asin="DEMO000007"><div data-cy="title-recipe"><a href="https://www.amazon.com/dp/DEMO000007"><h2>Hidden template item</h2></a></div><span>Sponsored</span></div></div>
+    <div class="demo-actions"><button id="add-result" type="button">Add a new sponsored result</button></div>
+  </main>
+  <script src="/extension/parser.js"></script>
+  <script src="/extension/content.js"></script>
+  <script>
+    document.getElementById('add-result').addEventListener('click', () => {
+      const item = document.getElementById('title-only').cloneNode(true);
+      item.id = 'added-' + Date.now();
+      item.dataset.asin = 'DEMO' + String(Date.now()).slice(-6);
+      item.classList.remove('sl-dim', 'sl-hidden');
+      item.querySelectorAll('[data-shopper-lens]').forEach(node => node.remove());
+      item.querySelector('h2').textContent = 'Newly loaded sponsored cable — fictional test item';
+      document.querySelector('.s-search-results').append(item);
+    });
+  </script>
+</body>
+</html>

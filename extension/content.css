@@ -1,0 +1,9 @@
+/* Page changes are classes, so removing them restores Amazon's original styles. */
+.sl-hidden { display: none !important; }
+.sl-dim { opacity: .38 !important; transition: opacity .15s; }
+.sl-dim:hover, .sl-dim:focus-within { opacity: 1 !important; }
+[data-shopper-lens="card"] { display: block !important; clear: both; margin: 8px 6px !important; }
+#shopper-lens-panel, #shopper-lens-launcher { all: initial; }
+#shopper-lens-panel { display: block; position: fixed; right: 16px; bottom: 66px; z-index: 2147483646; }
+#shopper-lens-launcher { display: block; position: fixed; right: 16px; bottom: 16px; z-index: 2147483647; }
+@media (prefers-reduced-motion: reduce) { .sl-dim { transition: none; } }
