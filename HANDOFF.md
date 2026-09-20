@@ -9,7 +9,8 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Implemented Manifest V3 package in `extension/`: conservative parser, reversible per-category filters, evidence labels, four-product comparison, and pause/resume. No build is needed to install.
 - `docs/SOURCES.md` and `docs/SCOPE.md` record primary sources and observable release criteria.
 - Synthetic fixtures, Node/jsdom tests, and a localhost demonstration are in `tests/` and `scripts/`.
-- Beginner README, privacy, sources, scope, and verification record are present. Git initialized on `main`; the 22-file initial source inventory was reviewed before the first commit. No public hosting yet.
+- Beginner README, privacy, sources, scope, and verification record are present. Initial source committed as `ae9ba35`; the 22-file inventory and all initial history blobs were reviewed with no secrets/private-file findings.
+- Public repository created at https://github.com/Falcon-Atx/shopper-lens. CLI authentication completed; reviewed source push is next.
 
 # Decisions and assumptions
 - Product name: Shopper Lens. Initial scope: HTTPS www.amazon.com English desktop /s searches; no API permissions, backend, analytics, saved browsing data, or injected affiliate links.
@@ -25,7 +26,7 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 
 # Blockers
 - Chrome browser automation is connected. Its URL policy blocks extension-manager access. User has been asked to load the reviewed `extension/` folder manually; subsequent live-page verification can be automated.
-- User signed into personal GitHub in Chrome. The official GitHub CLI browser authorization is awaiting the user's approval; an earlier request expired. No credentials or verification codes are stored in this project.
+- No GitHub authentication blocker remains. No credentials or verification codes are stored in this project.
 
 # Exact next action
-- Verify the unpacked extension on live Amazon search pages after user confirms loading, while completing source/history review and GitHub publication setup.
+- Push and verify the reviewed source, then verify the unpacked extension on live Amazon search pages after the user confirms loading.

@@ -6,6 +6,8 @@ Everything runs locally in the browser. There is no account to create, browsing-
 
 Version **0.1.0** is an early release. See [HANDOFF.md](HANDOFF.md) for completed checks and remaining work. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
 
+Source repository: [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens).
+
 ## Install in Chrome — no coding or build required
 
 1. On this repository's GitHub page, click **Code → Download ZIP**. Unzip the downloaded file. [GitHub's download guide](https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives) illustrates these controls.
@@ -60,11 +62,11 @@ Your installed copy does not update automatically. Download and unzip the latest
 
 For code changes, run the checks below and inspect the behavior in Chrome before sharing the update. Public commits expose their contents and history; review changed files and keep credentials and private data out.
 
-If you later use Git, replace these placeholders with your repository details. Run the clone command once; subsequent updates happen inside that cloned folder:
+If you later use Git, run the clone command once; subsequent updates happen inside that cloned folder:
 
 ```sh
-git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
-cd YOUR-REPOSITORY
+git clone https://github.com/Falcon-Atx/shopper-lens.git
+cd shopper-lens
 git pull --ff-only
 ```
 
