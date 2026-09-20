@@ -10,7 +10,7 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - `docs/SOURCES.md` and `docs/SCOPE.md` record primary sources and observable release criteria.
 - Synthetic fixtures, Node/jsdom tests, and a localhost demonstration are in `tests/` and `scripts/`.
 - Beginner README, privacy, sources, scope, and verification record are present. Initial source committed as `ae9ba35`; the 22-file inventory and all initial history blobs were reviewed with no secrets/private-file findings.
-- Public repository created at https://github.com/Falcon-Atx/shopper-lens. CLI authentication completed; reviewed source push is next.
+- Public source repository: https://github.com/Falcon-Atx/shopper-lens. Source pushed to `main`; remote hash matched local `29d01ba`, and GitHub reported `PUBLIC`. Subsequent documentation updates are committed on the same branch.
 
 # Decisions and assumptions
 - Product name: Shopper Lens. Initial scope: HTTPS www.amazon.com English desktop /s searches; no API permissions, backend, analytics, saved browsing data, or injected affiliate links.
@@ -22,11 +22,11 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Live page inspection succeeded in the in-app browser for USB-C cables, AA batteries, and men's T-shirts. Batteries showed title-only Amazon Basics mentions; clothing showed a separate Amazon Essentials brand field. Programmatic web fetches returned 503.
 - Syntax checks and 27 fixture/integration tests pass. Tests simulate geometry and cannot establish actual browser layout or unpacked installation.
 - Parser now handles the observed title-detail class and preserves visible qualifying price context. Review fixed detached labels and recycled-card selections. Synthetic browser UI checks passed; see `docs/VERIFICATION.md`.
-- Pre-publication file review and targeted scans found no secrets/private files. Dependency downloads use npm; installable code has no network/storage/history API calls. History will be rechecked after committing. Unpacked Chrome verification and public publication remain required.
+- Pre-publication file/history review and targeted scans found no secrets/private files. Dependency downloads use npm; installable code has no network/storage/history API calls. Public hosting is verified. Unpacked Chrome verification remains required.
 
 # Blockers
 - Chrome browser automation is connected. Its URL policy blocks extension-manager access. User has been asked to load the reviewed `extension/` folder manually; subsequent live-page verification can be automated.
-- No GitHub authentication blocker remains. No credentials or verification codes are stored in this project.
+- No public-hosting blocker remains. Task-local CLI authentication will be cleared after publication; future CLI pushes may require a fresh login. GitHub web edits remain available. No credentials or verification codes are stored in this project.
 
 # Exact next action
-- Push and verify the reviewed source, then verify the unpacked extension on live Amazon search pages after the user confirms loading.
+- Have the user load the `extension/` folder via Chrome's Load unpacked control, then refresh a live Amazon search and verify the Shopper Lens launcher appears. Complete live sponsored/brand/filter/comparison checks, record findings, fix relevant failures, and push the final verification update.
