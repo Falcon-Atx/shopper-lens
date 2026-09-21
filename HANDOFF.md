@@ -12,7 +12,7 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Beginner README, privacy, sources, scope, and verification record are present. Initial source committed as `ae9ba35`; the 22-file inventory and all initial history blobs were reviewed with no secrets/private-file findings.
 - Public source repository: https://github.com/Falcon-Atx/shopper-lens. Source pushed to `main`; remote hash matched local `29d01ba`, and GitHub reported `PUBLIC`. Subsequent documentation updates are committed on the same branch.
 - User loaded version 0.1.0 unpacked in Chrome. Actual content-script injection succeeded on live battery search: 60 supported product cards, 18 sponsored placements, title-only Amazon Basics matches kept uncertain.
-- Live testing found grid overlap blocking next-row Compare controls and a unit-price mislabel. Local 0.1.1 fixes insert labels inside the inner product card and require actual strike evidence before labelling a reference price. These changes still need Chrome reload and live recheck.
+- Live testing found grid overlap blocking next-row Compare controls and a unit-price mislabel. Local 0.1.1 fixes insert labels inside the inner product card and require actual strike evidence before labelling a reference price. These fixes are committed as `41edc4e`. They still need Chrome to load the updated files and a live recheck.
 
 # Decisions and assumptions
 - Product name: Shopper Lens. Initial scope: HTTPS www.amazon.com English desktop /s searches; no API permissions, backend, analytics, saved browsing data, or injected affiliate links.
@@ -27,8 +27,8 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Independent review of the 0.1.1 changes, all 22 tracked files, and all three existing commits found no secrets/private files or material code regressions. `git diff --check` passed. Pre-publication file/history review and targeted scans found no secrets/private files. Dependency downloads use npm; installable code has no network/storage/history API calls. Public hosting is verified. Unpacked Chrome verification remains required.
 
 # Blockers
-- Chrome browser automation is connected; extension is installed. Its URL policy blocks the extension manager, so the user must click Reload there to apply the prepared 0.1.1 fixes.
-- Final push needs renewed GitHub CLI authentication. GitHub requested password confirmation in the signed-in browser; the user must enter it personally (requested). Task-local authentication stays outside this repository and will be cleared after publication. No credentials or verification codes are stored in this project.
+- Chrome browser automation is connected; extension is installed. The user reports the manager still shows 0.1.0; the project manifest is verified as 0.1.1. It may be an older installed folder or a reload that has not applied. Its URL policy blocks the extension manager, so the user must reload or load this project’s `extension/` folder manually.
+- GitHub CLI authentication is complete; the reviewed 0.1.1 fixes can be pushed when network permission is available. Task-local authentication stays outside this repository and will be cleared after final publication. No credentials or verification codes are stored in this project.
 
 # Exact next action
-- After the user Reloads Shopper Lens (requested; prepared files are 0.1.1), refresh battery search and verify corrected checkbox hit targets and unit-price text. Complete clothing/cable filter/comparison checks and push the final reviewed changes.
+- Resolve the loaded-folder mismatch: have the user reload Shopper Lens or load this project’s `extension/` folder and confirm 0.1.1. Then refresh battery search and verify corrected checkbox hit targets and unit-price text. Complete clothing/cable filter/comparison checks and push the final reviewed changes.
