@@ -7,7 +7,7 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Live battery, clothing, and cable checks passed. Live failures in grid-control placement and unit-price descriptions were fixed in `41edc4e` and rechecked in Chrome.
 - Public repository: https://github.com/Falcon-Atx/shopper-lens. GitHub reported `PUBLIC`; 0.1.1 source was pushed, and remote `main` matched `e322f90` at that milestone.
 - README covers first-time installation, use, uncertainty, privacy, troubleshooting, and future updates. `docs/SCOPE.md`, `docs/SOURCES.md`, and `docs/VERIFICATION.md` hold release criteria, primary references, and the detailed verification record.
-- Final verification documentation is prepared; its final push and remote-hash check are the remaining publication step.
+- First-release completion criteria are met. Final verification documentation was pushed in `cf9709a`; remote `main` matched local HEAD, and GitHub again reported `PUBLIC`. This completion handoff follows on the same branch.
 
 # Decisions and assumptions
 - Read the supplied constitution first. The video is problem context based on the supplied timestamped notes; direct retrieval failed. Ranking-motive allegations are not extension claims.
@@ -21,10 +21,10 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Installed Chrome clothing page: 60 cards, 18 sponsored placements, one separately evidenced Amazon Essentials match. Brand Dim/Hide affected only that match; comparison preserved title/brand separation and displayed fields.
 - Installed Chrome cable page: 22 cards and 12 sponsored placements. Comparison preserved displayed prices, conditions, ratings, and unverified title details. Sponsored Hide removed six cards and six blocks. Restore preserved ordered product identifiers and original links on all three pages.
 - Visual inspection found no remaining overlap in the sampled grid/list layouts. Console sampling showed Amazon-origin errors, with no Shopper Lens error observed. The extension-manager error list was inaccessible to automation. These checks do not establish other region/language/mobile/theme or future-layout coverage.
-- Tracked source, lockfile, fixtures, documentation, and Git history were reviewed for secrets/private files before publication, with no findings. No private page captures or account credentials are included. Final documentation receives the same review before its push.
+- Tracked source, lockfile, fixtures, documentation, and Git history were reviewed for secrets/private files before publication, with no findings. No private page captures or account credentials are included. The final documentation review and targeted scan of all 22 tracked files and 41 historical blobs found no secrets/private-file matches.
 
 # Blockers
-- None in implementation or live verification. Final network publication is pending. Task-local CLI authentication is outside the repository and will be cleared after the final push.
+- None. Temporary publishing authentication is kept outside this repository and cleared at the end of publication. Future Git pushes may require sign-in; GitHub web editing is documented in README.
 
 # Exact next action
-- Review and commit the final documentation, push it, verify remote `main` matches local HEAD, rebuild the clean source archive, and clear task-local authentication. Then mark the first release complete.
+- No unfinished first-release action remains. For a future requested change, inspect this handoff and the actual Git state, implement the change, run the relevant checks, and reload the installed extension before live verification.
