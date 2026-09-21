@@ -1,6 +1,6 @@
 # Shopper Lens privacy and site access
 
-Applies to version 0.1.1. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection.
+Applies to version 0.1.2. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection. The third filter and changed defaults introduce no new permissions or storage.
 
 ## Information used
 
@@ -29,7 +29,9 @@ Amazon continues to make its own requests and apply its own policies. Clicking a
 
 ## Control and removal
 
-Filters start at Show. Restore all reverses Shopper Lens filtering. Pause on this page removes its interventions from product cards while keeping a way to resume. To stop it entirely, disable or remove Shopper Lens at `chrome://extensions` and refresh any open Amazon pages. There is no extension-created persistent browsing data to delete.
+The controls appear in this order: **Organic / unverified**, **Sponsored placements**, and **Verified Amazon brands**. They default to **Show**, **Dim**, and **Hide**, respectively. Organic / unverified includes standard product cards with neither a detected Sponsored disclosure nor a verified Amazon-brand match, including title-only and unknown ownership when sponsorship is not detected. This grouping does not establish that a product is independent of Amazon or unsponsored.
+
+Restore all sets all three controls to Show and reverses Shopper Lens filtering. Reloading clears selections and restores the Show / Dim / Hide defaults; settings are never saved. Filters do not reorder the original products. Pause on this page removes interventions from product cards while keeping a way to resume. To stop it entirely, disable or remove Shopper Lens at `chrome://extensions` and refresh any open Amazon pages. There is no extension-created persistent browsing data to delete.
 
 ## Development is separate
 

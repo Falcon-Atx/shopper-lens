@@ -1,10 +1,10 @@
 # Shopper Lens
 
-Shopper Lens is a small Chrome extension for English desktop Amazon.com searches. It highlights recognizable sponsored placements and verified Amazon-brand matches, offers optional Show / Dim / Hide controls, and compares information displayed on up to four product cards.
+Shopper Lens is a small Chrome extension for English desktop Amazon.com searches. It highlights recognizable sponsored placements and verified Amazon-brand matches, offers reversible Show / Dim / Hide controls for three groups, and compares information displayed on up to four product cards.
 
 Everything runs locally in the browser. There is no account to create, browsing-history collection, analytics, backend, or affiliate link injection. This is an independent project, unaffiliated with Amazon.
 
-Version **0.1.1** is an early release, verified unpacked in Chrome on battery, clothing, and cable searches, with 29 automated tests passing. See the [verification record](docs/VERIFICATION.md) for observations and limits. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
+Version **0.1.2** adds an **Organic / unverified** control and changes the default view described below. Live verification of this update is pending. Earlier version 0.1.1 was verified unpacked in Chrome on battery, clothing, and cable searches, with 29 automated tests passing; those results are historical. See the [verification record](docs/VERIFICATION.md) for checks by version and their limits. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
 
 Source repository: [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens).
 
@@ -23,16 +23,25 @@ You do not need Node.js, npm, Git, or a GitHub account to install the downloaded
 
 Click **Shopper Lens** on the search page to open the controls. The Chrome toolbar popup is an informational guide; the controls are on the Amazon page.
 
-- **Show** is the default for both categories. **Dim** reduces prominence; hovering or focusing a dimmed item brightens it. **Hide** removes recognized placements from your view. Sponsored blocks can contain several products, so hiding one hides the whole block.
-- **Verified Amazon brands** affects only cards with supported separate brand evidence. Title-only brand mentions stay visible under this filter.
+The controls appear in this order and start with these defaults on every page reload:
+
+| Control | Default | Affects |
+| --- | --- | --- |
+| **Organic / unverified** | **Show** | Standard product cards with neither a detected Sponsored disclosure nor a verified Amazon-brand match. Includes title-only or unknown ownership when no sponsorship is detected. This grouping is not proof of independence or an unsponsored placement. |
+| **Sponsored placements** | **Dim** | Recognized sponsored cards and placement blocks. |
+| **Verified Amazon brands** | **Hide** | Cards with supported separate brand evidence matching the two-brand registry. |
+
+- Every control offers **Show**, **Dim**, and **Hide**. Dimmed items brighten on hover or keyboard focus. Hide removes matching placements from view. Sponsored blocks can contain several products, so hiding one hides the whole block. If a card is both sponsored and a verified Amazon-brand match, Hide takes precedence over Dim.
+- Title-only brand mentions never match the **Verified Amazon brands** filter. They belong to **Organic / unverified** when no Sponsored disclosure is detected.
 - Check **Compare** on two to four standard product cards, then click **Compare selected**. Minimize the panel with **×** if it covers a card you want to select. The table copies displayed prices and conditions, ratings, rating counts, title details, and label evidence. **Original listing** opens the original product link.
-- **Restore all** shows everything filtered by Shopper Lens. **Pause on this page** also removes its card labels and comparison controls. Resume reapplies your chosen filters.
-- Reloading the page resets filters and selections. Hidden, removed, or replaced products leave the comparison. Nothing is reordered.
+- **Restore all** sets all three controls to **Show**. **Pause on this page** also removes its card labels and comparison controls. Resume reapplies your chosen filters.
+- Reloading clears selections and returns to **Show / Dim / Hide**, not the last settings or the restored state. Hidden, removed, or replaced products leave the comparison. Filters never reorder the original products.
 
 ## What the labels mean
 
 | Label or field | Meaning |
 | --- | --- |
+| Organic / unverified | A filter group for standard cards without detected sponsorship or verified Amazon ownership. Missing evidence, including title-only brand mentions, remains uncertain. The word "Organic" does not certify the placement as unsponsored. |
 | Sponsored / Sponsored block | A recognizable Sponsored disclosure appears in that card or placement. **Label evidence** explains the match. |
 | Amazon-owned brand | A separate displayed brand field matches **Amazon Basics** (including **AmazonBasics**) or **Amazon Essentials**, whose private-brand relationship is documented in [SOURCES.md](docs/SOURCES.md). This does not authenticate the item or identify its seller. |
 | Brand uncertain · title only | A title mentions a known name without confirming it in a supported separate brand field. This may describe a compatible accessory. |

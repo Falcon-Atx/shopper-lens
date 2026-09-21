@@ -1,6 +1,6 @@
-# Shopper Lens first release scope
+# Shopper Lens release scope — version 0.1.2
 
-Shopper Lens helps shoppers notice observable sponsored placements and known Amazon brands, optionally reduce their prominence, and compare a few products using information displayed on the current search page. The shopper chooses what matters. The extension does not recommend a winner or explain Amazon's ranking motives.
+Shopper Lens helps shoppers notice observable sponsored placements and known Amazon brands, control their prominence, and compare a few products using information displayed on the current search page. The shopper can change or reverse every filter. The extension does not recommend a winner or explain Amazon's ranking motives.
 
 ## Supported surface
 
@@ -15,6 +15,7 @@ Other Amazon regions, languages, mobile layouts, product detail pages, checkout,
 
 | Meaning | Required evidence | What it does not mean |
 | --- | --- | --- |
+| Organic / unverified | A supported standard product card has neither a detected Sponsored disclosure nor a verified Amazon-brand match. Title-only and unknown ownership are included when sponsorship is not detected. | The item is proven unsponsored, organically ranked, or independent of Amazon. This is a filter grouping based on missing evidence. |
 | Sponsored placement detected | A displayed Sponsored disclosure reliably associated with that card or placement block. | The item is poor quality, or sponsorship explains every aspect of its position. |
 | Sponsored label not detected | No supported displayed disclosure was found on this item. | The item is verified organic or has no commercial relationship with Amazon. |
 | Amazon-owned brand match | A separate displayed brand field exactly matches Amazon Basics, AmazonBasics, or Amazon Essentials after case/whitespace normalization; brand relationship has the references in [SOURCES.md](SOURCES.md). | The item is manufactured, sold, or shipped by Amazon; authenticity or quality is verified. |
@@ -25,9 +26,17 @@ Labels must expose the reason for a match in plain language. The title alone is 
 
 ## Shopper controls
 
-Sponsored placements and verified Amazon-brand cards each have Show, Dim, and Hide choices. Both default to Show. Changing one category should not silently change the other; Hide takes precedence when the same item matches both categories.
+The panel has three controls, each offering Show, Dim, and Hide, in this order:
 
-Dim and Hide are optional page-view changes. Original listings and links remain intact. A clearly available restore control returns all affected placements to their original presentation. Controls and comparison selections are held only for the current page lifetime and reset on reload. No history or preferences are saved.
+| Control | Default | Included results |
+| --- | --- | --- |
+| Organic / unverified | Show | Standard cards with neither detected sponsorship nor verified Amazon ownership. Includes title-only and unknown ownership when no sponsorship is detected; excludes placement blocks. |
+| Sponsored placements | Dim | Recognized sponsored cards and placement blocks. |
+| Verified Amazon brands | Hide | Cards matched through a supported separate brand field to the two-brand registry. |
+
+Changing one control does not silently change another. A card can match both sponsorship and verified ownership; Hide takes precedence over Dim in that case. Organic / unverified does not overlap either positive-evidence group, and its name does not establish independence or an unsponsored placement.
+
+Dim and Hide change only the page view. Original listings and links remain intact, and filters never reorder the original products. **Restore all** sets all three controls to Show. **Pause on this page** restores affected placements and removes card interventions while leaving a way to resume. Controls and comparison selections are held only for the current page lifetime: reloading clears selections and restores the Show / Dim / Hide defaults. No history or preferences are saved, and this update adds no permissions or storage.
 
 ## Comparisons
 
@@ -51,14 +60,14 @@ The Amazon page itself still has its ordinary network behavior. Following an ori
 1. The source package loads unpacked in Chrome without manifest or extension errors and runs on supported live search pages.
 2. Real page inspection covers representative electronics/accessory, household, and clothing searches. The record identifies which layouts were actually observed and distinguishes successful Chrome verification from in-app-browser inspection.
 3. Sponsored card and placement-block detection uses displayed disclosures. Source-backed brand matches require a separate brand field. Missing evidence remains uncertain.
-4. Show, Dim, Hide, overlapping categories, and Restore work on recognized placements. Restoring does not remove original listing content or change product links.
+4. All three controls appear in the documented order with Show / Dim / Hide defaults. Show, Dim, Hide, overlapping sponsorship/ownership, and Restore work on recognized placements. Organic / unverified affects only eligible standard cards. Restore sets all three to Show; reload restores the defaults. Filtering and restoring preserve original product order, listing content, and links.
 5. Comparison enforces its four-card limit, handles missing fields honestly, and excludes hidden or removed results. Dynamic page changes do not leave duplicate controls or stale selections.
 6. Meaningful fixtures cover supported card/block layouts, misleading brand mentions, unavailable fields, numeric/price ambiguity, and reversible behavior. Relevant failures found in fixtures or live Chrome checks are fixed and rerun.
 7. A beginner README explains installation without a build step, daily use, labels, privacy, limitations, troubleshooting, and future updates. Verification results record failures and limits honestly.
 8. Files and Git history are reviewed for secrets, personal data, private notes, generated artifacts, and unrelated assets before a Public repository is created and source is pushed to the user's personal GitHub account. The final repository URL is verified.
 9. `HANDOFF.md` reflects each meaningful milestone and names the exact next unfinished action until all criteria are met.
 
-These criteria define completion; their presence here does not assert they have already passed. Consult the current verification record and `HANDOFF.md` for actual status.
+These criteria define completion; their presence here does not assert they have already passed. The recorded version 0.1.1 live checks are historical and do not establish version 0.1.2 verification. Consult the [verification record](VERIFICATION.md) and `HANDOFF.md` for checks of the current version.
 
 ## Expected limitations
 

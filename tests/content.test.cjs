@@ -13,11 +13,20 @@ async function start(t) {
   return context;
 }
 
-test('default state labels cards without filtering and leaves source links unchanged', async t => {
+test('default category order and Show/Dim/Hide choices preserve result order and source links', async t => {
   const { document, panel, errors } = await start(t);
-  assert.equal(panel.querySelector('#sponsored').value, 'show');
-  assert.equal(panel.querySelector('#owned').value, 'show');
-  assert.equal(document.querySelectorAll('.sl-hidden,.sl-dim').length, 0);
+  assert.deepEqual([...panel.querySelectorAll('.filters select')].map(select => select.id), ['organic', 'sponsored', 'owned']);
+  assert.match(panel.querySelector('label[for="organic"]').textContent, /Organic \/ unverified/);
+  assert.equal(panel.querySelector('#organic').value, 'show');
+  assert.equal(panel.querySelector('#sponsored').value, 'dim');
+  assert.equal(panel.querySelector('#owned').value, 'hide');
+  assert.equal(document.getElementById('owned').classList.contains('sl-hidden'), true);
+  assert.equal(document.getElementById('title-only').classList.contains('sl-dim'), true);
+  assert.equal(document.getElementById('widget').classList.contains('sl-dim'), true);
+  for (const id of ['third-party', 'range', 'no-price', 'ordinary']) {
+    assert.equal(document.getElementById(id).matches('.sl-hidden,.sl-dim'), false);
+  }
+  assert.deepEqual([...document.querySelector('.s-search-results').children].map(card => card.id), ['title-only', 'owned', 'third-party', 'range', 'no-price', 'ordinary']);
   for (const id of ['title-only', 'owned', 'third-party', 'range', 'no-price', 'ordinary']) {
     assert.ok(checkbox(document, id), `Missing comparison choice for ${id}`);
     assert.equal(document.getElementById(id).querySelectorAll('[data-shopper-lens="card"]').length, 1);
@@ -41,12 +50,73 @@ test('dim and hide affect only supported labels, and Restore all reverses the ch
   assert.equal(document.getElementById('widget').classList.contains('sl-hidden'), false, 'Sponsorship alone cannot activate the brand filter');
   button(panel, /^Restore all$/i).click();
   await until(() => document.querySelectorAll('.sl-dim,.sl-hidden').length === 0);
+  assert.equal(panel.querySelector('#organic').value, 'show');
   assert.equal(panel.querySelector('#sponsored').value, 'show');
   assert.equal(panel.querySelector('#owned').value, 'show');
 });
 
+test('Organic / unverified affects only unmatched standard cards including uncertain title-only brands', async t => {
+  const { window, document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
+  setSelect(window, panel, 'organic', 'dim');
+  for (const id of ['third-party', 'range', 'no-price', 'ordinary']) {
+    assert.equal(document.getElementById(id).classList.contains('sl-dim'), true, `${id} belongs to the unverified category`);
+  }
+  for (const id of ['title-only', 'owned', 'widget']) {
+    assert.equal(document.getElementById(id).matches('.sl-hidden,.sl-dim'), false, `${id} must stay outside the unverified category while it has verified brand or sponsor evidence`);
+  }
+  document.querySelector('#title-only .s-sponsored-label-info-icon').remove();
+  await until(() => document.getElementById('title-only').classList.contains('sl-dim'));
+  assert.match(document.querySelector('#title-only [data-shopper-lens="card"]').shadowRoot.textContent, /Brand uncertain/);
+  setSelect(window, panel, 'organic', 'hide');
+  for (const id of ['title-only', 'third-party', 'range', 'no-price', 'ordinary']) {
+    assert.equal(document.getElementById(id).classList.contains('sl-hidden'), true);
+  }
+  assert.equal(document.getElementById('owned').classList.contains('sl-hidden'), false);
+  assert.equal(document.getElementById('widget').classList.contains('sl-hidden'), false);
+  button(panel, /^Restore all$/i).click();
+  assert.equal(document.querySelectorAll('.sl-dim,.sl-hidden').length, 0);
+  assert.deepEqual([...panel.querySelectorAll('.filters select')].map(select => select.value), ['show', 'show', 'show']);
+});
+
+test('hiding unverified products prunes only those selections from an open comparison', async t => {
+  const { window, document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
+  for (const id of ['ordinary', 'title-only', 'owned']) checkbox(document, id).click();
+  button(panel, /^Compare selected/i).click();
+  setSelect(window, panel, 'organic', 'hide');
+  await until(() => document.getElementById('ordinary').classList.contains('sl-hidden'));
+  assert.equal(checkbox(document, 'ordinary').checked, false);
+  assert.equal(checkbox(document, 'title-only').checked, true);
+  assert.equal(checkbox(document, 'owned').checked, true);
+  const tableText = panel.querySelector('table').textContent;
+  assert.doesNotMatch(tableText, /Compact desk lamp/);
+  assert.match(tableText, /Amazon Basics USB-C charging cable/);
+  assert.match(tableText, /Cotton crewneck T-shirt/);
+});
+
+test('sponsored and owned overlap keeps Hide precedence and stays outside the unverified category', async t => {
+  const { window, document, panel } = await start(t);
+  const card = document.getElementById('owned');
+  card.insertAdjacentHTML('beforeend', '<span class="s-sponsored-label-info-icon">Sponsored</span>');
+  await until(() => /Sponsored/.test(card.querySelector('[data-shopper-lens="card"]').shadowRoot.querySelector('.badge.ad')?.textContent || ''));
+  assert.equal(card.classList.contains('sl-hidden'), true, 'Default owned Hide takes precedence over sponsored Dim');
+  assert.equal(card.classList.contains('sl-dim'), false);
+  setSelect(window, panel, 'organic', 'hide');
+  setSelect(window, panel, 'owned', 'show');
+  assert.equal(card.classList.contains('sl-hidden'), false);
+  assert.equal(card.classList.contains('sl-dim'), true);
+  setSelect(window, panel, 'sponsored', 'show');
+  assert.equal(card.matches('.sl-hidden,.sl-dim'), false, 'Organic Hide cannot affect a sponsored verified-brand card');
+  setSelect(window, panel, 'owned', 'dim');
+  setSelect(window, panel, 'sponsored', 'hide');
+  assert.equal(card.classList.contains('sl-hidden'), true);
+  assert.equal(card.classList.contains('sl-dim'), false);
+});
+
 test('comparison is limited to four displayed products and explains missing values', async t => {
   const { document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
   for (const id of ['no-price', 'owned', 'third-party', 'ordinary', 'range']) checkbox(document, id).click();
   const selected = ['no-price', 'owned', 'third-party', 'ordinary', 'range'].filter(id => checkbox(document, id).checked);
   assert.equal(selected.length, 4);
@@ -75,6 +145,7 @@ test('hiding a selected product removes it from the comparison selection', async
 
 test('dynamic results receive labels and current filtering without duplicate controls', async t => {
   const { window, document, panel, errors } = await start(t);
+  setSelect(window, panel, 'organic', 'hide');
   setSelect(window, panel, 'sponsored', 'dim');
   const card = document.getElementById('title-only').cloneNode(true);
   card.id = 'dynamic-card';
@@ -85,13 +156,18 @@ test('dynamic results receive labels and current filtering without duplicate con
   await until(() => checkbox(document, 'dynamic-card'));
   assert.equal(card.classList.contains('sl-dim'), true);
   card.querySelector('.s-sponsored-label-info-icon').remove();
-  await until(() => !card.classList.contains('sl-dim'), 'Removing displayed sponsorship evidence must remove the dim effect');
+  await until(() => card.classList.contains('sl-hidden'), 'Removing sponsorship evidence must apply the unverified category choice');
+  assert.equal(card.classList.contains('sl-dim'), false);
+  card.insertAdjacentHTML('beforeend', '<span class="s-sponsored-label-info-icon">Sponsored</span>');
+  await until(() => card.classList.contains('sl-dim'), 'New sponsorship evidence must apply the sponsored category choice');
+  assert.equal(card.classList.contains('sl-hidden'), false);
   assert.equal(card.querySelectorAll('[data-shopper-lens="card"]').length, 1);
   assert.deepEqual(errors, []);
 });
 
 test('an open comparison refreshes changed prices and removes cards hidden by the page', async t => {
   const { document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
   for (const id of ['ordinary', 'owned', 'third-party']) checkbox(document, id).click();
   button(panel, /^Compare selected/i).click();
   await until(() => panel.querySelector('table'));
@@ -163,6 +239,7 @@ test('nested grid annotations stay inside the product container through scans an
 
 test('reusing a selected card element for another product cannot carry over the selection', async t => {
   const { document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
   for (const id of ['ordinary', 'owned', 'third-party']) checkbox(document, id).click();
   button(panel, /^Compare selected/i).click();
   const card = document.getElementById('ordinary');
@@ -177,6 +254,7 @@ test('reusing a selected card element for another product cannot carry over the 
 
 test('price and tracking query updates for the same ASIN preserve the shopper’s selection', async t => {
   const { document, panel } = await start(t);
+  button(panel, /^Restore all$/i).click();
   for (const id of ['ordinary', 'owned']) checkbox(document, id).click();
   button(panel, /^Compare selected/i).click();
   const card = document.getElementById('ordinary');
@@ -188,14 +266,36 @@ test('price and tracking query updates for the same ASIN preserve the shopper’
   assert.equal(checkbox(document, 'owned').checked, true);
 });
 
-test('pause restores product visibility and removes card interventions', async t => {
+test('Pause restores all categories and Resume reapplies the current three choices', async t => {
   const { window, document, panel } = await start(t);
+  setSelect(window, panel, 'organic', 'dim');
   setSelect(window, panel, 'sponsored', 'hide');
+  setSelect(window, panel, 'owned', 'show');
   await until(() => document.getElementById('title-only').classList.contains('sl-hidden'));
   button(panel, /^Pause on this page$/i).click();
   await until(() => document.querySelectorAll('.sl-hidden,.sl-dim').length === 0);
   assert.equal(document.querySelectorAll('[data-shopper-lens="card"]').length, 0);
   assert.ok(document.getElementById('shopper-lens-launcher'), 'A launcher must remain so the user can resume');
+  for (const id of ['organic', 'sponsored', 'owned']) assert.equal(panel.querySelector(`#${id}`).disabled, true);
+  assert.deepEqual([...panel.querySelectorAll('.filters select')].map(select => select.value), ['dim', 'hide', 'show']);
+  button(panel, /^Resume on this page$/i).click();
+  await until(() => checkbox(document, 'ordinary'));
+  for (const id of ['organic', 'sponsored', 'owned']) assert.equal(panel.querySelector(`#${id}`).disabled, false);
+  assert.equal(document.getElementById('ordinary').classList.contains('sl-dim'), true);
+  assert.equal(document.getElementById('title-only').classList.contains('sl-hidden'), true);
+  assert.equal(document.getElementById('owned').matches('.sl-hidden,.sl-dim'), false);
+});
+
+test('a fresh page reapplies defaults after previous page choices', async t => {
+  const first = await start(t);
+  button(first.panel, /^Restore all$/i).click();
+  setSelect(first.window, first.panel, 'organic', 'hide');
+  setSelect(first.window, first.panel, 'owned', 'dim');
+  const next = await start(t);
+  assert.deepEqual([...next.panel.querySelectorAll('.filters select')].map(select => select.value), ['show', 'dim', 'hide']);
+  assert.equal(next.document.getElementById('ordinary').matches('.sl-hidden,.sl-dim'), false);
+  assert.equal(next.document.getElementById('title-only').classList.contains('sl-dim'), true);
+  assert.equal(next.document.getElementById('owned').classList.contains('sl-hidden'), true);
 });
 
 test('unsupported pages are left alone', async t => {

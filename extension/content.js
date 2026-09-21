@@ -5,7 +5,10 @@
   const demo = ['localhost', '127.0.0.1'].includes(location.hostname);
   if (!demo && (location.hostname !== 'www.amazon.com' || !/^\/s(?:\/|$)/.test(location.pathname))) return;
 
-  const state = { sponsored: 'show', owned: 'show', paused: false, selected: new Set(), records: new Map(), comparing: false };
+  const defaults = { organic: 'show', sponsored: 'dim', owned: 'hide' };
+  const filterIds = Object.keys(defaults);
+  const state = { ...defaults, paused: false, selected: new Set(), records: new Map(), comparing: false };
+  const isOrganicUnverified = record => record.kind === 'product' && !record.data.sponsored && !record.data.ownedBrand;
   const $ = (selector, scope) => scope.querySelector(selector);
   const make = (tag, text, attrs = {}) => {
     const e = document.createElement(tag);
@@ -43,13 +46,16 @@
     <p class="lead">See the placement. Make your own comparison.</p>
     <div class="stats" id="stats" aria-live="polite">Looking for supported results…</div>
     <div class="filters">
+      <label class="filter" for="organic">Organic / unverified<select id="organic" aria-describedby="organic-help"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
       <label class="filter" for="sponsored">Sponsored placements<select id="sponsored"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
       <label class="filter" for="owned">Verified Amazon brands<select id="owned"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
     </div>
+    <p id="organic-help" class="muted" style="font-size:12px">Organic / unverified: no sponsored disclosure or verified Amazon brand detected. This is not proof that a result is organic or independent.</p>
     <p class="muted" style="font-size:12px">Filters affect recognized results only. Dimmed items brighten on hover or keyboard focus.</p>
     <div class="actions"><button class="primary" id="compare">Compare selected (0/4)</button><button id="restore">Restore all</button><button id="pause">Pause on this page</button></div>
     <div id="status" role="status"></div>
     <details><summary>What do the labels mean?</summary>
+      <p><strong>Organic / unverified:</strong> standard product cards with neither a detected Sponsored disclosure nor a verified Amazon-brand match. This includes uncertain title-only brand mentions. Missing evidence does not establish an organic placement or independent ownership.</p>
       <p><strong>Sponsored:</strong> the page displays a Sponsored disclosure in this card or ad block. Hiding a block hides its whole placement. A missing label is not proof of an unsponsored result.</p>
       <p><strong>Amazon-owned brand:</strong> a separate displayed brand field exactly matches Amazon Basics (including AmazonBasics) or Amazon Essentials. Amazon identifies these as private brands in its <a href="https://press.aboutamazon.com/uk/2025/3/get-ready-to-shop-with-amazon-spring-deal-days" target="_blank" rel="noopener noreferrer">March 2025 release</a>. Registry reviewed September 2026. This verifies the brand relationship, not seller identity or product authenticity.</p>
       <p><strong>Brand uncertain:</strong> a title mentions a known brand but does not supply a supported separate brand field. These results stay outside the brand filter. Other brands are not checked; no label means unknown, not independent.</p>
@@ -57,8 +63,9 @@
       <p>English Amazon.com desktop search only. Standard cards are comparable; recognized ad blocks are filterable. Some carousels, iframes, new layouts, and offscreen carousel slides may be missed. Results are never reordered.</p>
     </details>
     <div id="comparison" hidden></div>
-    <p class="foot">Local to this tab · no saved browsing data · no affiliate injection<br>Choices reset when the page reloads.</p>
+    <p class="foot">Local to this tab · no saved browsing data · no affiliate injection<br>On reload: organic / unverified Show · sponsored Dim · verified Amazon brands Hide. Restore all shows every category.</p>
   </section>`;
+  for (const id of filterIds) $('#'+id, panel).value = state[id];
   const launcherHost = make('div', null, { id: 'shopper-lens-launcher', 'data-shopper-lens': 'launcher' });
   const launcher = launcherHost.attachShadow({ mode: 'open' });
   launcher.innerHTML = `<style>${shared}button{background:#183c30;color:white;border-color:#183c30;border-radius:24px;padding:10px 16px;box-shadow:0 3px 18px #122b2d33}button:hover{background:#245a47}</style><button aria-expanded="false">◉ Shopper Lens</button>`;
@@ -124,7 +131,7 @@
     let removed = 0;
     for (const record of state.records.values()) {
       const { element, data } = record;
-      const modes = [data.sponsored ? state.sponsored : 'show', data.ownedBrand ? state.owned : 'show'];
+      const modes = [isOrganicUnverified(record) ? state.organic : 'show', data.sponsored ? state.sponsored : 'show', data.ownedBrand ? state.owned : 'show'];
       const hidden = !state.paused && modes.includes('hide');
       element.classList.toggle('sl-hidden', hidden);
       element.classList.toggle('sl-dim', !hidden && !state.paused && modes.includes('dim'));
@@ -137,7 +144,7 @@
     const records = [...state.records.values()];
     const products = records.filter(r => r.kind === 'product');
     const hidden = records.filter(r => r.element.classList.contains('sl-hidden')).length;
-    $('#stats', panel).textContent = state.paused ? 'Paused. Original results are restored.' : `${products.length} supported product cards · ${records.filter(r => r.data.sponsored).length} sponsored placements · ${products.filter(r => r.data.ownedBrand).length} verified brand matches · ${hidden} hidden`;
+    $('#stats', panel).textContent = state.paused ? 'Paused. Original results are restored.' : `${products.length} supported product cards · ${products.filter(isOrganicUnverified).length} organic / unverified · ${records.filter(r => r.data.sponsored).length} sponsored placements · ${products.filter(r => r.data.ownedBrand).length} verified brand matches · ${hidden} hidden`;
     if (!products.length && !state.paused) $('#stats', panel).textContent += ' — No comparable cards found; this layout may be unsupported or still loading.';
     $('#compare', panel).textContent = `Compare selected (${state.selected.size}/4)`;
     $('#compare', panel).disabled = state.selected.size < 2;
@@ -224,18 +231,18 @@
       if (replacedSelections) message(`${replacedSelections} changed product${replacedSelections === 1 ? '' : 's'} removed from comparison. Select replacements to compare them.`);
     });
   }
-  for (const id of ['sponsored', 'owned']) $('#'+id, panel).addEventListener('change', e => {
+  for (const id of filterIds) $('#'+id, panel).addEventListener('change', e => {
     state[id] = e.target.value; message(''); transaction(applyFilters);
   });
   $('#restore', panel).addEventListener('click', () => {
-    state.sponsored = state.owned = 'show'; $('#sponsored', panel).value = $('#owned', panel).value = 'show';
+    for (const id of filterIds) { state[id] = 'show'; $('#'+id, panel).value = 'show'; }
     transaction(applyFilters); message('All filtered placements restored.');
   });
   $('#compare', panel).addEventListener('click', () => { state.comparing = true; renderComparison(); });
   $('#pause', panel).addEventListener('click', () => {
     state.paused = !state.paused;
     $('#pause', panel).textContent = state.paused ? 'Resume on this page' : 'Pause on this page';
-    for (const id of ['sponsored', 'owned']) $('#'+id, panel).disabled = state.paused;
+    for (const id of filterIds) $('#'+id, panel).disabled = state.paused;
     if (state.paused) transaction(() => {
       for (const r of state.records.values()) { r.element.classList.remove('sl-hidden', 'sl-dim'); r.annotation?.remove(); }
       state.records.clear(); state.selected.clear(); state.comparing = false; renderComparison(); updateSummary(); message('Page restored. Resume to add labels again.');

@@ -1,6 +1,15 @@
 # Verification record
 
-Versions 0.1.0–0.1.1. Checks ran September 19–21, 2026. This record distinguishes observed behavior from untested coverage.
+Versions 0.1.0–0.1.2. Checks began September 19, 2026. This record distinguishes observed behavior from untested coverage.
+
+## Version 0.1.2 update
+
+The requested Organic / unverified control appears before Sponsored placements and Verified Amazon brands. It includes only standard cards with neither supported sponsorship evidence nor a verified brand match. It does not certify organic ranking or independence. Defaults are Show / Dim / Hide respectively; Restore all sets all three to Show, and reloading returns to the defaults. No original products are reordered, and permissions and local-only processing are unchanged.
+
+- `npm run check` passed; all 33 automated tests passed.
+- Tests cover category order and defaults, uncertain title-only mentions, exclusion of positive sponsorship/ownership matches, organic-filter selection pruning, overlapping sponsored/owned filters, dynamic category transitions, restoration, Pause/Resume, and fresh-page defaults.
+- Installed Chrome 0.1.2 verification is pending the requested user reload. The earlier 0.1.1 live observations below remain historical. Publication of this update is pending the requested GitHub authentication confirmation.
+
 
 ## Automated checks
 
