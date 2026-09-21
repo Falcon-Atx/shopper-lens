@@ -7,7 +7,7 @@ Maintain Shopper Lens, a local Manifest V3 extension for English desktop Amazon.
 - Source update is committed as `a50a527`. Syntax checks and all 33 automated tests pass. Independent source review found no material issues or new permissions/storage/network use.
 - Live 0.1.2 cable and clothing checks passed, including category separation, default hiding, comparison pruning, Pause/Resume, Restore, and reload defaults. `docs/VERIFICATION.md` records concrete observations and limits.
 - The earlier 0.1.1 release was publicly published and verified on battery, clothing, and cable layouts; its observations remain historical.
-- Public repository: https://github.com/Falcon-Atx/shopper-lens. Final 0.1.2 documentation and publication are being completed. GitHub CLI authentication succeeded after refreshing an expired device code.
+- Release complete: https://github.com/Falcon-Atx/shopper-lens is Public. Version 0.1.2 source and verification documentation were pushed in `9bbe3c9`; remote `main` matched local HEAD. This completion handoff follows on the same branch.
 
 # Decisions and assumptions
 - Read the supplied constitution first. The video is problem context based on the supplied timestamped notes; direct retrieval failed. Ranking-motive allegations are not extension claims.
@@ -27,7 +27,7 @@ Maintain Shopper Lens, a local Manifest V3 extension for English desktop Amazon.
 - Tracked source, lockfile, fixtures, documentation, and Git history were reviewed for secrets/private files before publication, with no findings. No private page captures or account credentials are included. The final documentation review and targeted scan of all 22 tracked files and 56 historical blobs found no secrets/private-file matches.
 
 # Blockers
-- None in implementation or verification. GitHub authentication is complete; final publication is the remaining action. Temporary credentials stay outside the repository and are cleared after publication.
+- None. Version 0.1.2 is ready for sharing as an unpacked extension. Chrome Web Store submission remains outside scope. Temporary publishing credentials stay outside the repository and are cleared at the end of publication; later Git pushes may require sign-in.
 
 # Exact next action
-- Review and commit the final 0.1.2 documentation, push the source and records, verify public remote HEAD, refresh the clean source archive, clear temporary credentials, and record release completion.
+- No unfinished 0.1.2 release action remains. For a new requested change, inspect this handoff and actual Git state, implement and verify the change, reload the installed extension, then publish the reviewed update.
