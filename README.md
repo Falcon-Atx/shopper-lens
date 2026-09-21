@@ -4,7 +4,7 @@ Shopper Lens is a small Chrome extension for English desktop Amazon.com searches
 
 Everything runs locally in the browser. There is no account to create, browsing-history collection, analytics, backend, or affiliate link injection. This is an independent project, unaffiliated with Amazon.
 
-Version **0.1.2** adds an **Organic / unverified** control and changes the default view described below. Live verification of this update is pending. Earlier version 0.1.1 was verified unpacked in Chrome on battery, clothing, and cable searches, with 29 automated tests passing; those results are historical. See the [verification record](docs/VERIFICATION.md) for checks by version and their limits. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
+Version **0.1.2** adds an **Organic / unverified** control and the default view described below. All 33 automated tests pass, and the updated controls were verified in installed Chrome on live cable and clothing searches. Earlier version 0.1.1 checks also covered battery searches; those observations remain historical. See the [verification record](docs/VERIFICATION.md) for checks by version and their limits. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
 
 Source repository: [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens).
 

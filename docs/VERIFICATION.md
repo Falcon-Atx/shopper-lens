@@ -8,7 +8,34 @@ The requested Organic / unverified control appears before Sponsored placements a
 
 - `npm run check` passed; all 33 automated tests passed.
 - Tests cover category order and defaults, uncertain title-only mentions, exclusion of positive sponsorship/ownership matches, organic-filter selection pruning, overlapping sponsored/owned filters, dynamic category transitions, restoration, Pause/Resume, and fresh-page defaults.
-- Installed Chrome 0.1.2 verification is pending the requested user reload. The earlier 0.1.1 live observations below remain historical. Publication of this update is pending the requested GitHub authentication confirmation.
+- The user confirmed installed Chrome version 0.1.2. Live cable and clothing checks passed as detailed below. Earlier 0.1.1 observations remain historical.
+
+Installed 0.1.2 was checked on an English desktop Amazon.com `usb c cable` search:
+
+| Check | Observed result |
+| --- | --- |
+| Control order and defaults | Live DOM showed Organic / unverified, Sponsored placements, and Verified Amazon brands in that order, set to Show / Dim / Hide. The rendered panel showed the first control and its uncertainty explanation. |
+| Detection and initial filtering | 22 supported standard cards; 16 Organic / unverified cards; 12 sponsored placements comprising six cards and six blocks; zero verified brand matches. The default view dimmed 12 placements and hid none. |
+| Two-product comparison | Selecting one sponsored card and one Organic / unverified card preserved displayed titles, prices, unit prices, a genuinely struck-through reference amount, multi-buy conditions, ratings, rating counts, and unverified title details. |
+| Organic / unverified Dim | All 16 eligible cards dimmed, alongside the 12 already-dimmed sponsored placements: 28 dimmed placements total. |
+| Organic / unverified Hide | The 16 eligible cards had computed `display:none`; the 12 sponsored placements remained dimmed. The hidden organic selection left comparison while the sponsored selection remained. |
+| Pause | Removed all 28 annotations and all filter classes, and disabled all three filter controls. |
+| Resume | Restored 28 annotations, 16 hidden cards, and 12 dimmed placements while retaining the chosen Hide / Dim / Hide settings. |
+| Restore all | Set all three controls to Show and removed all filter classes. The ordered array of original ASINs and product URLs matched its pre-filter value exactly. |
+
+Installed 0.1.2 was also checked on an English desktop Amazon.com `mens t shirts` search:
+
+| Check | Observed result |
+| --- | --- |
+| Default filtering | 60 supported cards, 47 Organic / unverified cards, 18 sponsored placements, and one separately evidenced Amazon Essentials brand match. Defaults dimmed 18 placements and hid only that verified match with computed `display:none`. |
+| Brand Show | Changing Verified Amazon brands to Show revealed the Amazon Essentials card. |
+| Category separation | Organic / unverified Hide then hid 47 cards; the verified brand stayed shown and the 18 sponsored placements stayed dimmed. |
+| Restore all | All three controls became Show, all filter classes were removed, and the ordered original identifiers and URLs matched the pre-filter array exactly. |
+| Reload | After Restore all, reloading reset the controls to Show / Dim / Hide, with 18 dimmed placements and one hidden verified brand match. |
+
+Automation occasionally timed out waiting for click or reload responses; subsequent DOM checks confirmed the actions had succeeded. These were tool-response timeouts, not observed extension failures. The sampled page-console errors all came from Amazon scripts; none mentioned Shopper Lens. The extension-manager error list is inaccessible to browser automation. No new extension failure was observed in these checks.
+
+The 0.1.2 implementation, 33-test suite, installed Chrome checks, uncertainty wording, documentation, and pre-publication review are complete. Scope remains English desktop Amazon.com with two supported brands; these sampled layouts do not establish universal detection. Source and this record are published on the repository’s `main` branch.
 
 
 ## Automated checks
