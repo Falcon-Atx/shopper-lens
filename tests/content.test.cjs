@@ -113,6 +113,54 @@ test('page removal of a card annotation restores exactly one set of controls', a
   assert.match(card.querySelector('[data-shopper-lens="card"]').shadowRoot.textContent, /Amazon-owned brand/);
 });
 
+test('nested grid annotations stay inside the product container through scans and redraws', async t => {
+  for (const targetAttributes of ['data-cy="asin-faceout-container"', 'class="puis-card-container"']) {
+    const context = createDOM(`<!doctype html><html lang="en"><body>
+      <div id="nested" data-component-type="s-search-result" data-asin="NEST000001">
+        <div class="sg-col-inner" style="height:100%"><div ${targetAttributes}>
+          <div data-cy="title-recipe"><a href="https://www.amazon.com/dp/NEST000001"><h2>Nested synthetic product</h2></a></div>
+          <span class="a-price"><span class="a-offscreen">$9.99</span><span aria-hidden="true">$9.99</span></span>
+        </div></div>
+      </div>
+    </body></html>`, { content: true });
+    t.after(() => context.dom.window.close());
+    const { document } = context;
+    const card = document.getElementById('nested');
+    const selector = '[data-cy="asin-faceout-container"], .puis-card-container';
+    let target = card.querySelector(selector);
+    await until(() => checkbox(document, 'nested'));
+    const firstHost = card.querySelector('[data-shopper-lens="card"]');
+    assert.equal(firstHost.parentElement, target, `Annotation must be inside ${targetAttributes}`);
+    assert.equal(target.firstElementChild, firstHost);
+    assert.equal(card.children.length, 1, 'No annotation may precede the height:100% inner wrapper');
+    assert.equal(card.firstElementChild.className, 'sg-col-inner');
+    checkbox(document, 'nested').click();
+
+    // A new unrelated result forces another full scan of the unchanged card.
+    const other = document.createElement('div');
+    other.id = 'scan-trigger';
+    other.dataset.componentType = 's-search-result';
+    other.dataset.asin = 'NEST000002';
+    other.innerHTML = '<div data-cy="title-recipe"><a href="https://www.amazon.com/dp/NEST000002"><h2>Second synthetic product</h2></a></div>';
+    document.body.append(other);
+    await until(() => checkbox(document, 'scan-trigger'));
+    assert.equal(card.querySelector('[data-shopper-lens="card"]'), firstHost);
+    assert.equal(card.querySelectorAll('[data-shopper-lens="card"]').length, 1);
+    assert.equal(checkbox(document, 'nested').checked, true);
+
+    // Amazon can replace the entire faceout while keeping its outer result node.
+    const replacement = target.cloneNode(true);
+    replacement.querySelectorAll('[data-shopper-lens="card"]').forEach(node => node.remove());
+    target.replaceWith(replacement);
+    target = replacement;
+    await until(() => checkbox(document, 'nested'), 'Redrawn inner product container must regain its controls');
+    assert.equal(card.querySelector('[data-shopper-lens="card"]').parentElement, target);
+    assert.equal(card.querySelectorAll('[data-shopper-lens="card"]').length, 1);
+    assert.equal(card.children.length, 1);
+    assert.equal(checkbox(document, 'nested').checked, true, 'A redraw of the same product preserves the shopper’s selection');
+  }
+});
+
 test('reusing a selected card element for another product cannot carry over the selection', async t => {
   const { document, panel } = await start(t);
   for (const id of ['ordinary', 'owned', 'third-party']) checkbox(document, id).click();

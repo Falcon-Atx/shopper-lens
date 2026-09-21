@@ -4,7 +4,7 @@ Shopper Lens is a small Chrome extension for English desktop Amazon.com searches
 
 Everything runs locally in the browser. There is no account to create, browsing-history collection, analytics, backend, or affiliate link injection. This is an independent project, unaffiliated with Amazon.
 
-Version **0.1.0** is an early release. See [HANDOFF.md](HANDOFF.md) for completed checks and remaining work. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
+Version **0.1.1** is an early release. See [HANDOFF.md](HANDOFF.md) for completed checks and remaining work. A public GitHub repository makes the source available; this extension has **not** been submitted to the Chrome Web Store.
 
 Source repository: [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens).
 
@@ -25,7 +25,7 @@ Click **Shopper Lens** on the search page to open the controls. The Chrome toolb
 
 - **Show** is the default for both categories. **Dim** reduces prominence; hovering or focusing a dimmed item brightens it. **Hide** removes recognized placements from your view. Sponsored blocks can contain several products, so hiding one hides the whole block.
 - **Verified Amazon brands** affects only cards with supported separate brand evidence. Title-only brand mentions stay visible under this filter.
-- Check **Compare** on two to four standard product cards, then click **Compare selected**. The table copies displayed prices and conditions, ratings, rating counts, title details, and label evidence. **Original listing** opens the original product link.
+- Check **Compare** on two to four standard product cards, then click **Compare selected**. Minimize the panel with **×** if it covers a card you want to select. The table copies displayed prices and conditions, ratings, rating counts, title details, and label evidence. **Original listing** opens the original product link.
 - **Restore all** shows everything filtered by Shopper Lens. **Pause on this page** also removes its card labels and comparison controls. Resume reapplies your chosen filters.
 - Reloading the page resets filters and selections. Hidden, removed, or replaced products leave the comparison. Nothing is reordered.
 

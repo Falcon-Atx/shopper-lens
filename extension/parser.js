@@ -156,7 +156,11 @@
     if (node.nodeType !== 1 || !isDisplayed(node)) return '';
     if (node.matches('.a-price')) {
       const amount = priceAmount(node);
-      if (node.matches('.a-text-price, [data-a-strike="true"]') || node.closest('s, del, strike')) {
+      // Amazon also uses a-text-price for ordinary unit prices. That class
+      // alone does not establish a struck-through/list price.
+      const struck = node.matches('[data-a-strike="true"]') || node.closest('s, del, strike') ||
+        node.ownerDocument.defaultView?.getComputedStyle(node).textDecorationLine.includes('line-through');
+      if (struck) {
         return includeListPrices && amount ? `(struck-through: ${amount})` : '';
       }
       return amount || '';

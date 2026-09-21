@@ -1,6 +1,6 @@
 {
   "name": "shopper-lens",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Local, evidence-based controls and comparison for Amazon search",
   "scripts": {
@@ -8,5 +8,7 @@
     "check": "node --check extension/parser.js && node --check extension/content.js && node --check extension/popup.js",
     "demo": "node scripts/demo-server.cjs"
   },
-  "devDependencies": { "jsdom": "26.1.0" }
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
 }

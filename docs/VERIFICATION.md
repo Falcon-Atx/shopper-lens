@@ -1,11 +1,11 @@
 # Verification record
 
-Version 0.1.0. Checks began September 19, 2026. This record distinguishes observations from remaining work.
+Versions 0.1.0–0.1.1. Checks began September 19, 2026. This record distinguishes observations from remaining work.
 
 ## Automated checks
 
 - `npm run check`: all shipped JavaScript passes Node syntax checks.
-- `npm test`: 27/27 parser and integration tests pass.
+- `npm test`: 29/29 parser and integration tests pass for 0.1.1, including nested-grid annotation placement/redraw and unit-price-versus-list-price regressions.
 - Tests cover sponsored evidence, title-only false positives, exact brand matching, hidden evidence, missing/list/unit/range/ambiguous prices, price conditions, unsafe URL schemes, selection limits, restoration, pause/resume, and dynamic results.
 - Review found and fixed two dynamic bugs: detached annotations now recover without duplicates; recycled product elements no longer inherit a selection. Same-product price/tracking updates preserve selections.
 - Tests simulate element geometry in jsdom. They do not prove Chrome installation or live layout coverage.
@@ -30,12 +30,21 @@ The demonstration loads the scripts as ordinary page scripts. It is not a substi
 
 ## Unpacked extension on live Chrome pages
 
-Pending. The automation tool blocks opening `chrome://extensions`; the user has been given exact steps to load the reviewed `extension/` folder. After loading, verify representative live searches, filters, comparison values, labels, restoration, and any extension errors.
+The user loaded 0.1.0 and supplied an enabled-extension screenshot. The installed content script ran on a live English Amazon.com battery search, identifying 60 supported product cards and 18 sponsored placements. Default Show and sponsored Dim worked; title-only Amazon Basics matches remained uncertain. A live comparison preserved a missing price as unknown, displayed source rating labels, and retained a subscription condition.
+
+Two live failures were found and fixed in local 0.1.1:
+
+- Labels inserted outside Amazon's full-height inner card pushed that card over the next row and intercepted checkbox clicks. Labels now enter the actual inner product card; simple layouts retain a fallback.
+- Amazon uses `a-text-price` for both unit prices and reference prices. That class alone incorrectly marked a unit price as struck through. Strike descriptions now require the strike attribute, semantic strike element, or actual text-decoration evidence.
+
+Reload and live re-verification of 0.1.1 remain pending. The automation tool blocks the extension-manager URL, so the user must click Reload there. No additional permissions are introduced.
 
 ## Publication review
 
 Reviewed the 22-file staging inventory (approximately 121 KB), source, synthetic fixtures, documentation and dependency lock. No credentials, private keys, personal filesystem paths, private account files, page captures, or unrelated large assets were found. All dependency download URLs point to the npm registry. Extension code contains no networking, storage or history API use. The manifest declares no API permissions or extra host permissions. This is a review plus targeted pattern scanning, not a guarantee that any future change is safe.
 
 Git was initialized for this project with no pre-existing history. The initial commit `ae9ba35` contains only the reviewed files; all 22 historical blobs were scanned again without findings. Source and documentation were pushed to [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens). GitHub reported `PUBLIC` visibility and `main` as the default branch. `git ls-remote` matched the local publication commit `29d01ba7d082119d0b788c16551eff58bbe7a36c`. Later verification-only documentation commits remain on that branch.
+
+An independent follow-up review covered the 0.1.1 diff, all 22 tracked files, and all three existing commits (27 historical file versions), with no secrets, private-file, or material code-regression findings. No dependencies or permissions changed.
 
 The unpacked-extension checks above are still unfinished. Public source hosting is not a claim that Chrome installation or all live behaviors have been verified.

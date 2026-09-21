@@ -11,6 +11,8 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 - Synthetic fixtures, Node/jsdom tests, and a localhost demonstration are in `tests/` and `scripts/`.
 - Beginner README, privacy, sources, scope, and verification record are present. Initial source committed as `ae9ba35`; the 22-file inventory and all initial history blobs were reviewed with no secrets/private-file findings.
 - Public source repository: https://github.com/Falcon-Atx/shopper-lens. Source pushed to `main`; remote hash matched local `29d01ba`, and GitHub reported `PUBLIC`. Subsequent documentation updates are committed on the same branch.
+- User loaded version 0.1.0 unpacked in Chrome. Actual content-script injection succeeded on live battery search: 60 supported product cards, 18 sponsored placements, title-only Amazon Basics matches kept uncertain.
+- Live testing found grid overlap blocking next-row Compare controls and a unit-price mislabel. Local 0.1.1 fixes insert labels inside the inner product card and require actual strike evidence before labelling a reference price. These changes still need Chrome reload and live recheck.
 
 # Decisions and assumptions
 - Product name: Shopper Lens. Initial scope: HTTPS www.amazon.com English desktop /s searches; no API permissions, backend, analytics, saved browsing data, or injected affiliate links.
@@ -20,13 +22,13 @@ Build Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com
 
 # Verification
 - Live page inspection succeeded in the in-app browser for USB-C cables, AA batteries, and men's T-shirts. Batteries showed title-only Amazon Basics mentions; clothing showed a separate Amazon Essentials brand field. Programmatic web fetches returned 503.
-- Syntax checks and 27 fixture/integration tests pass. Tests simulate geometry and cannot establish actual browser layout or unpacked installation.
+- Syntax checks and 29 fixture/integration tests pass for 0.1.1, including regressions for the two live failures. Tests simulate geometry and cannot establish actual browser layout on their own.
 - Parser now handles the observed title-detail class and preserves visible qualifying price context. Review fixed detached labels and recycled-card selections. Synthetic browser UI checks passed; see `docs/VERIFICATION.md`.
-- Pre-publication file/history review and targeted scans found no secrets/private files. Dependency downloads use npm; installable code has no network/storage/history API calls. Public hosting is verified. Unpacked Chrome verification remains required.
+- Independent review of the 0.1.1 changes, all 22 tracked files, and all three existing commits found no secrets/private files or material code regressions. `git diff --check` passed. Pre-publication file/history review and targeted scans found no secrets/private files. Dependency downloads use npm; installable code has no network/storage/history API calls. Public hosting is verified. Unpacked Chrome verification remains required.
 
 # Blockers
-- Chrome browser automation is connected. Its URL policy blocks extension-manager access. User has been asked to load the reviewed `extension/` folder manually; subsequent live-page verification can be automated.
-- No public-hosting blocker remains. Task-local CLI authentication will be cleared after publication; future CLI pushes may require a fresh login. GitHub web edits remain available. No credentials or verification codes are stored in this project.
+- Chrome browser automation is connected; extension is installed. Its URL policy blocks the extension manager, so the user must click Reload there to apply the prepared 0.1.1 fixes.
+- Final push needs renewed GitHub CLI authentication. GitHub requested password confirmation in the signed-in browser; the user must enter it personally (requested). Task-local authentication stays outside this repository and will be cleared after publication. No credentials or verification codes are stored in this project.
 
 # Exact next action
-- Have the user load the `extension/` folder via Chrome's Load unpacked control, then refresh a live Amazon search and verify the Shopper Lens launcher appears. Complete live sponsored/brand/filter/comparison checks, record findings, fix relevant failures, and push the final verification update.
+- After the user Reloads Shopper Lens (requested; prepared files are 0.1.1), refresh battery search and verify corrected checkbox hit targets and unit-price text. Complete clothing/cable filter/comparison checks and push the final reviewed changes.

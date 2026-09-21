@@ -1,6 +1,6 @@
 # Shopper Lens privacy and site access
 
-Applies to version 0.1.0. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection.
+Applies to version 0.1.1. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection.
 
 ## Information used
 

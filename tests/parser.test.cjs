@@ -148,6 +148,25 @@ test('hidden promotions stay outside price context and strike prices remain iden
   assert.doesNotMatch(price, /90%|Free with subscription/);
 });
 
+test('live unit-price text styling does not imply a struck-through price', t => {
+  const { dom, document, parser } = createDOM();
+  t.after(() => dom.window.close());
+  const card = document.getElementById('ordinary');
+  const priceRegion = card.querySelector('.a-price').parentElement;
+  priceRegion.dataset.cy = 'price-recipe';
+  priceRegion.insertAdjacentHTML('beforeend', `
+    <span>(<span class="a-price a-text-price" data-a-size="b"><span class="a-offscreen">$0.32</span><span aria-hidden="true">$0.32</span></span> / count)</span>
+    <div>Extra 15% off when you subscribe</div>
+    <div>List: <span class="a-price a-text-price" data-a-size="b" data-a-strike="true"><span class="a-offscreen">$29.99</span><span aria-hidden="true">$29.99</span></span></div>
+  `);
+  const price = parser.parseCard(card).price;
+  assert.match(price, /^\$19\.99/);
+  assert.match(price, /\$0\.32\s*\/\s*count/);
+  assert.match(price, /Extra 15% off when you subscribe/);
+  assert.match(price, /struck-through: \$29\.99/);
+  assert.doesNotMatch(price, /struck-through:\s*\$0\.32/, 'The unit amount is normal text, not an old/list price');
+});
+
 test('brand aliases match exactly and product-title text cannot masquerade as a sponsor label', t => {
   const { dom, document, parser } = createDOM();
   t.after(() => dom.window.close());

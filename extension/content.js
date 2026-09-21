@@ -79,12 +79,17 @@
   let observer, timer;
   const observe = () => observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'aria-label', 'href', 'data-asin'] });
   const transaction = fn => { observer?.disconnect(); try { fn(); } finally { if (observer) observe(); } };
+  function annotationTarget(element, kind) {
+    // Amazon stretches the inner card to 100% of its grid row. A sibling
+    // inserted above that wrapper would push it into the next row and cover
+    // that row's controls. Keep our content inside the actual product card.
+    if (kind === 'product') return element.querySelector('[data-cy="asin-faceout-container"], .puis-card-container') || element;
+    return element.querySelector(':scope > .sg-col-inner') || element;
+  }
   function annotate(record) {
     const { element, data, kind } = record;
     // A page-rendered clone may retain our host without its shadow controls.
-    for (const child of [...element.children]) {
-      if (child.matches('[data-shopper-lens="card"]')) child.remove();
-    }
+    for (const child of element.querySelectorAll('[data-shopper-lens="card"]')) child.remove();
     const host = make('div', null, { 'data-shopper-lens': 'card' });
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${shared}
@@ -113,7 +118,7 @@
     const lines = [data.sponsored ? `Page disclosure: ${data.sponsorEvidence}` : 'Sponsored disclosure not detected in this card; placement is unverified.'];
     if (kind === 'product') lines.push(data.ownershipEvidence || 'No supported separate brand field matches our two-brand registry. Ownership unverified.');
     for (const line of lines) details.append(make('p', line));
-    bar.append(details); element.prepend(host); record.annotation = host;
+    bar.append(details); annotationTarget(element, kind).prepend(host); record.annotation = host;
   }
   function applyFilters() {
     let removed = 0;
@@ -196,7 +201,7 @@
         const signature = JSON.stringify(data);
         const identity = productIdentity(element, data, kind);
         if (record && record.identity !== identity && state.selected.delete(element)) replacedSelections++;
-        if (record && (record.signature !== signature || record.identity !== identity || record.annotation?.parentElement !== element)) {
+        if (record && (record.signature !== signature || record.identity !== identity || record.annotation?.parentElement !== annotationTarget(element, kind))) {
           record.annotation?.remove(); record = null;
         }
         if (!record) { record = { element, data, kind, signature, identity }; annotate(record); }
