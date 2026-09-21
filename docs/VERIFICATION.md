@@ -1,6 +1,6 @@
 # Verification record
 
-Versions 0.1.0–0.1.1. Checks began September 19, 2026. This record distinguishes observations from remaining work.
+Versions 0.1.0–0.1.1. Checks ran September 19–21, 2026. This record distinguishes observed behavior from untested coverage.
 
 ## Automated checks
 
@@ -37,7 +37,27 @@ Two live failures were found and fixed in local 0.1.1:
 - Labels inserted outside Amazon's full-height inner card pushed that card over the next row and intercepted checkbox clicks. Labels now enter the actual inner product card; simple layouts retain a fallback.
 - Amazon uses `a-text-price` for both unit prices and reference prices. That class alone incorrectly marked a unit price as struck through. Strike descriptions now require the strike attribute, semantic strike element, or actual text-decoration evidence.
 
-Reload and live re-verification of 0.1.1 remain pending. The automation tool blocks the extension-manager URL, so the user must click Reload there. No additional permissions are introduced.
+The user subsequently confirmed 0.1.1 in Chrome. The installed extension was rechecked on a live English Amazon.com AA-battery search, with these results:
+
+| Check | Observed result |
+| --- | --- |
+| Detection and uncertainty | 60 supported product cards, 18 sponsored placements, and zero verified brand matches. Title-only Amazon Basics mentions remained uncertain. |
+| Grid and checkbox interaction | An annotation was nested inside its product card. A formerly blocked checkbox accepted a click, and hit-testing reached its own label. The inner card stayed within its outer bounds; visual inspection showed no row overlap. |
+| Four-product comparison | Missing price stayed unknown. Displayed examples retained `$9.99 ($0.50/count)` and `$15.29 ($0.32/count)` with their subscription conditions. A `$15.02` Energizer listing correctly identified its `$15.98` struck-through list amount. These are observations of that page, not current product-price claims. |
+| Sponsored controls | Dim affected 18 placements. Hide affected 18 with computed `display:none`; two selected sponsored products left the comparison, leaving two products with uncertain ownership. |
+| Restore | The ordered array of original product identifiers and URLs matched the pre-filter array exactly. |
+| Pause and Resume | Pause removed all 66 annotations and all filter classes. Resume restored 66 annotations with no active filters. The automation connection timed out transiently during Resume; a subsequent DOM check confirmed it had succeeded. |
+
+Installed 0.1.1 also passed these live checks:
+
+| Query | Observed result |
+| --- | --- |
+| `mens t shirts` | 60 supported cards, 18 sponsored placements, and one verified Amazon Essentials match. The match used the separate displayed brand heading. Its checkbox was clickable and the grid had no observed overlap. Comparison with a PUMA card kept brand and product title separate, copied displayed price/unit price and ratings, and left absent details unknown. Brand Dim and Hide affected only the Amazon Essentials card; hiding pruned its selection. Restore matched the original ordered identifiers and links exactly. |
+| `usb c cable` | 22 supported list cards, 12 sponsored placements, and zero verified brand matches. Labels and comparison controls rendered within the list cards. Two-product comparison retained visible unit prices and multi-buy conditions, ratings/counts, and separate title details marked unverified. Sponsored Hide removed six cards and six placement blocks, all with computed `display:none`, and pruned the selected sponsored card. Restore matched the original ordered identifiers and links exactly. |
+
+The sampled page-console errors came from Amazon scripts; no Shopper Lens error was observed in that sample. The extension-manager error list was not directly inspected because browser automation blocks that internal page. The user confirmed the installed version, and actual content-script execution and interactions were verified above.
+
+No additional permissions were introduced by 0.1.1. Live checks used the existing desktop Chrome profile and viewport. They do not establish universal regional, language, theme, mobile, iframe, carousel, or future-layout coverage. The floating panel can cover results; minimize it to select a covered card. Automated fixtures cover dynamic replacement and the four-card cap; those cases were not forced into the live Amazon page.
 
 ## Publication review
 
@@ -47,4 +67,6 @@ Git was initialized for this project with no pre-existing history. The initial c
 
 An independent follow-up review covered the 0.1.1 diff, all 22 tracked files, and all three existing commits (27 historical file versions), with no secrets, private-file, or material code-regression findings. No dependencies or permissions changed.
 
-The unpacked-extension checks above are still unfinished. Public source hosting is not a claim that Chrome installation or all live behaviors have been verified.
+The 0.1.1 fixes (`41edc4e`) and subsequent handoff update (`e322f90`) were pushed to the same public repository. The remote `main` hash matched `e322f905b2aa0cfebcbbb18810a9a4b64bb60f9e`. Final verification documentation is maintained on that same branch.
+
+The first-release implementation, unpacked installation, and representative battery, clothing, and cable checks are complete. Public source hosting and these checks do not establish coverage of every Amazon layout. No Chrome Web Store submission was performed.
