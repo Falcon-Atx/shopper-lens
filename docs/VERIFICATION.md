@@ -12,6 +12,7 @@ Compact lowest displayed unit prices now appear beside their category selectors.
 - A live cable search showed two separate lines beside each of the first two selectors: per-count and per-foot minima. The empty brand category showed “No supported cards.” Screenshot and DOM geometry inspection found no row overflow or overlap with the selectors at the tested desktop viewport.
 - The local demo rendered compact unavailable states. It remains a synthetic demonstration, separate from the installed checks above. Other viewport sizes, locales, and layouts remain unverified.
 - The final update diff contains only source, tests, version metadata, and public documentation. No permissions, dependencies, storage, networking, or private files were introduced. Prior history review is recorded under 0.1.3.
+- Version 0.1.4 was pushed as `236d3de3b4c97a3ee26b55c04b197b24c091ed9d`; remote `main` matched local HEAD and GitHub reported PUBLIC visibility. Final publication notes follow on the same branch.
 
 ## Version 0.1.3 update
 

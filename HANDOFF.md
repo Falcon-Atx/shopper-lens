@@ -5,9 +5,9 @@ Maintain Shopper Lens, a local Manifest V3 extension for English desktop Amazon.
 The latest request places each category’s lowest displayed unit prices beside its Show / Dim / Hide selector. Done means separate currency/unit minima, continued visibility under filtering, correct missing/paused states, readable layout, verification, documentation, and public publication.
 
 # Current state
-- Version 0.1.4 implementation and verification are complete; publication is next. Compact prices sit beside selectors in `extension/content.js`; the detailed section retains original links, ties, offer conditions, and coverage counts. Select accessible names stay unchanged and prices are associated descriptions.
+- Version 0.1.4 is complete and public. Compact prices sit beside selectors in `extension/content.js`; the detailed section retains original links, ties, offer conditions, and coverage counts. Select accessible names stay unchanged and prices are associated descriptions.
 - All 54 tests and syntax checks pass. Installed Chrome clothing and cable checks passed after the user confirmed 0.1.4. No parser, aggregation, permissions, dependencies, storage, or network behavior changed in this update.
-- Version 0.1.3 is already public at https://github.com/Falcon-Atx/shopper-lens, including implementation commit `795aaaa485a3c5ab7fcfe7afec4f89de295b36f9` and final documentation commit `f48868a`. Its tracked-source ZIP is alongside the project as `shopper-lens-v0.1.3.zip`.
+- Version 0.1.4 is public at https://github.com/Falcon-Atx/shopper-lens. The remote `main` matched implementation commit `236d3de3b4c97a3ee26b55c04b197b24c091ed9d`; final publication notes follow on the same branch. The local tracked-source ZIP is `shopper-lens-v0.1.4.zip` alongside the project. Earlier 0.1.3 remains in Git history and its own ZIP.
 - `docs/PUBLISHING.md` explains public GitHub installation and future Chrome Web Store preparation. No store submission, payment, agreement, or upload occurred. Store icons and promotional assets are still absent.
 
 # Decisions and assumptions
@@ -27,7 +27,7 @@ The latest request places each category’s lowest displayed unit prices beside 
 - Before 0.1.3 publication, targeted review covered 25 files, ten commits, and 60 historical blobs plus metadata with no credential/private-data findings. The 0.1.4 diff contains only public source, tests, docs, and version metadata; no new private files.
 
 # Blockers
-- None. Chrome reload and GitHub CLI access are working. Chrome Web Store submission is outside the current scope; user handles any future credentials, payments, and agreements personally.
+- None. Installed Chrome verification and public source publication are complete. Chrome Web Store submission is outside the current scope; user handles any future credentials, payments, and agreements personally.
 
 # Exact next action
-- Commit and push reviewed 0.1.4 changes, verify remote visibility/hash, create the tracked-source ZIP, record publication, and clear temporary CLI credentials. On a later session inspect actual state before proceeding with the next user-requested change.
+- No unfinished product work for 0.1.4. On resumption inspect actual state and the next user request. If this session stopped during final housekeeping, ensure the archive matches final HEAD and clear temporary CLI credentials. A future store-release request starts with `docs/PUBLISHING.md` and still requires store assets and account setup.
