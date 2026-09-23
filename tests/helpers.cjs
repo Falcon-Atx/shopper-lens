@@ -18,6 +18,7 @@ function createDOM(html = fixture, { content = false, url = 'https://www.amazon.
   dom.window.Element.prototype.getBoundingClientRect = function () { return rect; };
   dom.window.HTMLElement.prototype.scrollIntoView = function () {};
   dom.window.eval(fs.readFileSync(path.join(root, 'extension/parser.js'), 'utf8'));
+  dom.window.eval(fs.readFileSync(path.join(root, 'extension/unit-summary.js'), 'utf8'));
   if (content) dom.window.eval(fs.readFileSync(path.join(root, 'extension/content.js'), 'utf8'));
   return { dom, window: dom.window, document: dom.window.document, parser: dom.window.ShopperLensParser, errors };
 }

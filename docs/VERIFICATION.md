@@ -1,6 +1,29 @@
 # Verification record
 
-Versions 0.1.0–0.1.2. Checks began September 19, 2026. This record distinguishes observed behavior from untested coverage.
+Versions 0.1.0–0.1.3. Checks began September 19, 2026. This record distinguishes observed behavior from untested coverage.
+
+## Version 0.1.3 update
+
+Lowest displayed unit-price summaries cover all three categories. The user explicitly chose to keep price summaries available even when Shopper Lens hides products. Minima are scoped to supported loaded standard cards and grouped by currency/unit, with original links, conditions, ties, missing-data counts, and no inferred quantities or conversions. No permissions or data transmission are added.
+
+- `npm test` passed all 54 tests on September 22: 29 parser, 19 integration, and six aggregation tests. `npm run check` passed for all shipped scripts.
+- Tests cover separate currency/unit groups, exact ties and links, retained offer conditions, hidden-category minima, missing values, reactive edits, and Pause/Resume. Independent review found and fixed false minima from signed/savings amounts and partially accepted compound denominators; regression tests cover both.
+- Targeted pre-publication review covered 25 current files, ten commits, and 60 historical blobs plus commit metadata, with no credentials or private-data findings. This is not a guarantee for arbitrary future changes.
+
+The user reloaded the unpacked extension, and its new content-script summary was verified on live English desktop Amazon.com searches on September 22. The amounts below are historical observations, not current product-price claims.
+
+| Check | Observed result |
+| --- | --- |
+| Batteries | 60 standard cards, 48 Organic / unverified cards, 18 sponsored placements, no verified brands. Unit-price coverage was 45/48 Organic / unverified cards and 10/12 sponsored standard cards. Six sponsored blocks did not enter the price comparison. Source-card prices supported the displayed minima of $0.21/count and $0.22/count respectively. The sponsored winner retained its extra subscription-discount condition without applying it. |
+| Hide every category | All 66 recognized battery cards/blocks were hidden. The same minima, eligibility counts, source links, and offer context remained in the summary with hidden-result notices. |
+| Pause / Resume / Restore | Pause removed labels and filters and cleared the price summary. Resume rebuilt the same summary and 66 hidden placements. Restore removed filters; ordered original product identifiers, source URLs, and winner URLs matched the pre-filter snapshot. |
+| Cables | 22 standard cards, with 12/16 Organic / unverified and 4/6 sponsored cards supplying unit prices. USD per count and USD per foot stayed separate. Organic minima were $2.00/count and $0.30/feet; sponsored minima were $4.50/count and $0.33/feet. Raw displayed prices agreed. The only sponsored per-foot candidate was explicitly marked as the only available one. Coupon, multi-buy, and struck-through reference amounts remained in context without changing the unit-price minima. |
+| Clothing ties | 60 standard cards; 14/47 Organic / unverified and 1/12 sponsored cards supplied unit prices. All three Organic / unverified listings tied at $4.00/count were retained; expanding the tie exposed all three original links and their separate offer conditions. Sponsored showed $20.00/count with the only-candidate qualifier. |
+| Missing brand unit price | One separately evidenced Amazon Essentials card was hidden by default. It displayed a $15.10 total and no unit price. The brand category correctly reported 0/1 readable unit prices both while hidden and after Show. Its title said Pack of 6; no unit price was inferred from that title. |
+| Comparison | A two-card clothing comparison preserved the $15.10 total with an unavailable unit-price explanation, alongside another card's $20.99 total and explicit $4.20/count. |
+| Visual and console inspection | Battery and cable summary panels rendered with readable groups, full conditions, source links, keyboard navigation, and scrolling. Sampled console errors came from Amazon scripts; none in that sample came from Shopper Lens. Some browser-control responses timed out, but direct DOM checks confirmed the actions succeeded. |
+
+An actual priced verified-brand winner did not occur in these sampled live pages; hidden-brand minima are covered by synthetic integration tests. The extension-manager error list remains inaccessible to automation. These checks do not establish other locales, languages, currencies, mobile layouts, or future Amazon layouts. The public-distribution guide is in [PUBLISHING.md](PUBLISHING.md); no Chrome Web Store submission has occurred. Earlier results below remain historical.
 
 ## Version 0.1.2 update
 

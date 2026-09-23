@@ -298,6 +298,91 @@ test('a fresh page reapplies defaults after previous page choices', async t => {
   assert.equal(next.document.getElementById('owned').classList.contains('sl-hidden'), true);
 });
 
+function addDisplayedUnitPrice(document, id, amount) {
+  const card = document.getElementById(id);
+  const region = card.querySelector('.a-price').parentElement;
+  region.dataset.cy = 'price-recipe';
+  const unit = document.createElement('span');
+  unit.className = 'a-size-base';
+  unit.textContent = `($${amount} / count)`;
+  region.append(unit);
+  return unit;
+}
+
+function unitCategory(panel, id) {
+  return panel.querySelector(`#unit-summary-content [data-unit-category="${id}"]`);
+}
+
+test('unit summaries explain missing data without inventing zero prices or counting ad blocks', async t => {
+  const { panel } = await start(t);
+  assert.equal(panel.querySelector('#unit-prices').open, true);
+  assert.match(panel.querySelector('#unit-prices').textContent, /including those hidden by your filters/i);
+  assert.match(panel.querySelector('#unit-prices').textContent, /does not mean best quality or overall value/i);
+  assert.match(unitCategory(panel, 'organic').textContent, /0 of 4 cards with readable unit prices.*4 unavailable/);
+  assert.match(unitCategory(panel, 'sponsored').textContent, /0 of 1 cards with readable unit prices.*1 unavailable/);
+  assert.match(unitCategory(panel, 'owned').textContent, /0 of 1 cards with readable unit prices.*1 unavailable/);
+  for (const id of ['organic', 'sponsored', 'owned']) {
+    assert.match(unitCategory(panel, id).textContent, /No reliable unit price displayed/);
+    assert.equal(unitCategory(panel, id).querySelectorAll('.unit-value,a').length, 0);
+  }
+});
+
+test('unit summaries retain tied original listings, offer context and hidden brand winners', async t => {
+  const { document, panel } = await start(t);
+  addDisplayedUnitPrice(document, 'ordinary', '0.50');
+  const thirdPartyUnit = addDisplayedUnitPrice(document, 'third-party', '0.50');
+  const condition = document.createElement('span');
+  condition.textContent = 'Extra 15% off when you subscribe';
+  thirdPartyUnit.parentElement.append(condition);
+  addDisplayedUnitPrice(document, 'owned', '0.25');
+  addDisplayedUnitPrice(document, 'title-only', '0.75');
+  document.getElementById('widget').insertAdjacentHTML('beforeend', '<div data-cy="price-recipe"><span class="a-price"><span class="a-offscreen">$0.01</span></span><span>($0.01 / count)</span></div>');
+  await until(() => unitCategory(panel, 'organic').querySelectorAll('.unit-winner').length === 2, 'Equal unit prices should preserve both original listings');
+  const organic = unitCategory(panel, 'organic');
+  assert.match(organic.querySelector('.unit-value').textContent, /\$0\.50\s*\/\s*count/);
+  assert.match(organic.textContent, /2 of 4 cards with readable unit prices.*2 unavailable/);
+  assert.match(organic.querySelector('.unit-group summary').textContent, /2 listings tied/);
+  assert.deepEqual([...organic.querySelectorAll('.unit-winner a')].map(link => link.href).sort(), [
+    'https://www.amazon.com/dp/DEMO000003',
+    'https://www.amazon.com/dp/DEMO000006',
+  ]);
+  assert.match(organic.textContent, /Extra 15% off when you subscribe/);
+  const owned = unitCategory(panel, 'owned');
+  assert.equal(document.getElementById('owned').classList.contains('sl-hidden'), true);
+  assert.match(owned.querySelector('.unit-value').textContent, /\$0\.25\s*\/\s*count/);
+  assert.match(owned.textContent, /Hidden by your filters/);
+  assert.equal(owned.querySelector('a').href, 'https://www.amazon.com/dp/DEMO000002');
+  const sponsored = unitCategory(panel, 'sponsored');
+  assert.match(sponsored.textContent, /1 of 1 cards with readable unit prices/);
+  assert.match(sponsored.querySelector('.unit-value').textContent, /\$0\.75\s*\/\s*count/);
+  assert.doesNotMatch(sponsored.textContent, /\$0\.01/);
+});
+
+test('unit summaries react to price edits, retain filtered winners, and clear while paused', async t => {
+  const { window, document, panel } = await start(t);
+  const ordinaryUnit = addDisplayedUnitPrice(document, 'ordinary', '0.50');
+  addDisplayedUnitPrice(document, 'third-party', '0.40');
+  await until(() => unitCategory(panel, 'organic').querySelector('.unit-winner a')?.href.endsWith('/DEMO000003'));
+  ordinaryUnit.textContent = '($0.20 / count)';
+  await until(() => unitCategory(panel, 'organic').querySelector('.unit-winner a')?.href.endsWith('/DEMO000006'), 'Changing a displayed unit amount must update the lowest listing');
+  assert.match(unitCategory(panel, 'organic').querySelector('.unit-value').textContent, /\$0\.20/);
+  setSelect(window, panel, 'organic', 'hide');
+  assert.equal(document.getElementById('ordinary').classList.contains('sl-hidden'), true);
+  assert.equal(unitCategory(panel, 'organic').querySelector('.unit-winner a').href, 'https://www.amazon.com/dp/DEMO000006');
+  assert.match(unitCategory(panel, 'organic').textContent, /2 of 4 cards with readable unit prices/);
+  assert.match(unitCategory(panel, 'organic').textContent, /Hidden by your filters/);
+  button(panel, /^Restore all$/i).click();
+  assert.doesNotMatch(unitCategory(panel, 'organic').textContent, /Hidden by your filters/);
+  button(panel, /^Pause on this page$/i).click();
+  const output = panel.querySelector('#unit-summary-content');
+  assert.match(output.textContent, /Paused/);
+  assert.equal(output.querySelectorAll('a,.unit-value,[data-unit-category]').length, 0, 'Pause must not leave old price summaries visible');
+  ordinaryUnit.textContent = '($0.30 / count)';
+  button(panel, /^Resume on this page$/i).click();
+  await until(() => /\$0\.30/.test(unitCategory(panel, 'organic')?.querySelector('.unit-value')?.textContent || ''), 'Resume must read current prices rather than restore stale summary data');
+  assert.equal(unitCategory(panel, 'organic').querySelector('.unit-winner a').href, 'https://www.amazon.com/dp/DEMO000006');
+});
+
 test('unsupported pages are left alone', async t => {
   const { dom, document } = createDOM(undefined, { content: true, url: 'https://www.amazon.com/dp/DEMO000001' });
   t.after(() => dom.window.close());

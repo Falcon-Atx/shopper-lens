@@ -10,6 +10,7 @@ const files = new Map([
   ['/', ['tests/fixtures/search.html', 'text/html; charset=utf-8']],
   ['/tests/fixtures/search.html', ['tests/fixtures/search.html', 'text/html; charset=utf-8']],
   ['/extension/parser.js', ['extension/parser.js', 'text/javascript; charset=utf-8']],
+  ['/extension/unit-summary.js', ['extension/unit-summary.js', 'text/javascript; charset=utf-8']],
   ['/extension/content.js', ['extension/content.js', 'text/javascript; charset=utf-8']],
   ['/extension/content.css', ['extension/content.css', 'text/css; charset=utf-8']],
 ]);

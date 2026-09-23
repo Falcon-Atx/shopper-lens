@@ -1,4 +1,4 @@
-# Shopper Lens release scope — version 0.1.2
+# Shopper Lens release scope — version 0.1.3
 
 Shopper Lens helps shoppers notice observable sponsored placements and known Amazon brands, control their prominence, and compare a few products using information displayed on the current search page. The shopper can change or reverse every filter. The extension does not recommend a winner or explain Amazon's ranking motives.
 
@@ -47,7 +47,7 @@ Compare up to four currently displayed standard cards side by side using only re
 - Displayed average customer rating and displayed rating count. A rounded count stays rounded. A rating count must not be presented as a count of written reviews unless the page specifically establishes that meaning.
 - Sponsorship and brand evidence, including uncertainty.
 
-No unit-price normalization, inferred specifications, quality score, fake-review assessment, price-history claim, or composite "best value" ranking is in scope. Titles may contain specifications supplied by the listing; copying the title does not independently verify them. Prices and ratings alone do not establish that two items have equivalent sizes, quantities, variants, specifications, or quality.
+Unit-price summaries show the numeric minimum among explicit, readable page-displayed prices in each category, separately for each currency and unit. They include supported loaded cards hidden by Shopper Lens and retain original links, offer conditions, equal-price ties, and coverage counts. No unit conversion, inferred pack quantity, inferred specifications, quality score, fake-review assessment, price-history claim, or composite "best value" ranking is in scope. Missing, ambiguous, range/from, crossed-out, and unsupported prices cannot win; only-one-candidate cases are identified. Per-count prices are not evidence that the underlying products are equivalent. Titles may contain specifications supplied by the listing; copying the title does not independently verify them. Prices and ratings alone do not establish that two items have equivalent sizes, quantities, variants, specifications, or quality.
 
 ## Privacy and permissions
 
@@ -56,6 +56,8 @@ The extension is a Manifest V3 package containing local scripts and styles. Cont
 The Amazon page itself still has its ordinary network behavior. Following an original listing or reference link opens that destination normally; the extension's local-processing promise does not change the destination website's behavior.
 
 ## Observable definition of done
+
+For 0.1.3, explicit unit-price extraction and per-category minima must be covered by tests and actual installed Chrome checks. Unit summaries must remain available under filters, distinguish units/currencies, preserve offer conditions and ties, and state missing data. Previous-version observations alone do not verify this update.
 
 1. The source package loads unpacked in Chrome without manifest or extension errors and runs on supported live search pages.
 2. Real page inspection covers representative electronics/accessory, household, and clothing searches. The record identifies which layouts were actually observed and distinguishes successful Chrome verification from in-app-browser inspection.
@@ -67,7 +69,7 @@ The Amazon page itself still has its ordinary network behavior. Following an ori
 8. Files and Git history are reviewed for secrets, personal data, private notes, generated artifacts, and unrelated assets before a Public repository is created and source is pushed to the user's personal GitHub account. The final repository URL is verified.
 9. `HANDOFF.md` reflects each meaningful milestone and names the exact next unfinished action until all criteria are met.
 
-These criteria define completion; their presence here does not assert they have already passed. The recorded version 0.1.1 live checks are historical and do not establish version 0.1.2 verification. Consult the [verification record](VERIFICATION.md) and `HANDOFF.md` for checks of the current version.
+These criteria define completion; their presence here does not assert they have already passed. The recorded version 0.1.1 live checks are historical and do not establish version 0.1.3 verification. Consult the [verification record](VERIFICATION.md) and `HANDOFF.md` for checks of the current version.
 
 ## Expected limitations
 

@@ -222,6 +222,102 @@
     return unit ? `${amount} (${unit.replace(/^\(|\)$/g, '')})` : amount;
   }
 
+  const unitAliases = Object.freeze({
+    count: 'count', counts: 'count', item: 'item', items: 'item', unit: 'unit', units: 'unit',
+    foot: 'ft', feet: 'ft', ft: 'ft', ounce: 'oz', ounces: 'oz', oz: 'oz',
+    'fluid ounce': 'fl oz', 'fluid ounces': 'fl oz', 'fluid oz': 'fl oz', 'fl oz': 'fl oz',
+    pound: 'lb', pounds: 'lb', lb: 'lb', lbs: 'lb', gram: 'g', grams: 'g', g: 'g',
+    kilogram: 'kg', kilograms: 'kg', kg: 'kg',
+    milliliter: 'ml', milliliters: 'ml', millilitre: 'ml', millilitres: 'ml', ml: 'ml',
+    liter: 'l', liters: 'l', litre: 'l', litres: 'l', l: 'l'
+  });
+
+  function unitPriceText(node) {
+    if (node.nodeType === 3) return isDisplayed(node) ? node.textContent : ' \uFFFC ';
+    if (node.nodeType !== 1 || !isDisplayed(node)) return ' \uFFFC ';
+    const style = node.ownerDocument.defaultView?.getComputedStyle(node);
+    if (node.matches('s, del, strike, [data-a-strike="true"], [data-cy="secondary-offer-recipe"]') ||
+        /line-through/.test(`${style?.textDecorationLine || ''} ${style?.textDecoration || ''}`)) {
+      // A separator prevents text either side of an excluded price from being
+      // accidentally joined into a new amount/denominator pair.
+      return ' \uFFFC ';
+    }
+    // a-text-price is also used for valid unit amounts on live Amazon cards.
+    if (node.matches('.a-price')) return priceAmount(node) || ' \uFFFC ';
+    return Array.from(node.childNodes).map(unitPriceText).join(' ');
+  }
+
+  function findUnitPrice(card, price) {
+    const unavailable = reason => ({ unitPrice: null, unitPriceReason: reason });
+    if (!price) return unavailable('Listing price is not reliably readable.');
+    let region = card.querySelector('[data-cy="price-recipe"]');
+    if (!region) {
+      const main = Array.from(card.querySelectorAll('.a-price')).find(node =>
+        isDisplayed(node) && !node.matches('.a-text-price, .a-size-base') &&
+        !node.closest('s, del, strike, [data-a-strike="true"], [data-cy="secondary-offer-recipe"]'));
+      region = main && (main.closest('a') || main.parentElement);
+    }
+    if (!region) return unavailable('No supported displayed unit price.');
+    const text = normalize(unitPriceText(region));
+    if (/\b(?:from|starting\s+(?:at|from)|as\s+low\s+as)\b/i.test(text) ||
+        /[$€£¥₹]\s*[\d.,]+\s*(?:[-–—]|\bto\b)\s*[$€£¥₹]?\s*[\d.,]+/i.test(text)) {
+      return unavailable('Starting or ranged prices are not comparable.');
+    }
+
+    // Match the page's explicit price-per-unit expression, never a quantity
+    // inferred from a title or an arithmetic division of the total price.
+    const expression = /([$€£¥₹])\s*([+\-]?[\d.,]+)\s*(?:\/|\bper\b)\s*((?:\d+(?:\.\d+)?\s*)?(?:fluid\s+(?:ounces?|oz\.?)|fl\.?\s*oz\.?|[a-z]+\.?))/gi;
+    const matches = Array.from(text.matchAll(expression));
+    if (!matches.length) return unavailable('No supported displayed unit price.');
+    if (matches.length !== 1) return unavailable('Multiple displayed unit prices; no single value.');
+    const match = matches[0];
+    const prefix = text.slice(0, match.index);
+    const rawAmount = match[2];
+    const rawUnit = normalize(match[3]).toLowerCase().replace(/\./g, '');
+    const unit = Object.hasOwn(unitAliases, rawUnit) ? unitAliases[rawUnit] : null;
+    // Keep denominator quantities such as /100g out of /g groups. V1 of this
+    // feature accepts one explicitly named unit and performs no conversions.
+    if (!unit) return unavailable('The displayed unit or denominator is not supported.');
+    const remainder = text.slice(match.index + match[0].length);
+    if (/^\s*(?:[-–—]|\bto\b)\s*[$€£¥₹]?\s*[\d.,]+/i.test(remainder) ||
+        /[\d.,]+\s*(?:[-–—]|\bto\b)\s*$/.test(prefix)) {
+      return unavailable('Starting or ranged prices are not comparable.');
+    }
+    // A discount per unit is not the purchase price per unit. Keep signs that
+    // precede the currency symbol and nearby savings wording out of minima.
+    if (/[+\-−–—]\s*$/.test(prefix) ||
+        /\b(?:save|savings|discount|rebate|coupon)\b[^$€£¥₹.!?;]{0,60}$/i.test(prefix) ||
+        /^\s*[)\]]?\s*(?:off|savings?|discount|rebate|coupon)\b/i.test(remainder)) {
+      return unavailable('Signed or savings amounts are not purchase unit prices.');
+    }
+    if (/^[^\s)\],;:]/.test(remainder) || /^\s*(?:[/\\+\-−–—*×·&^%]|\bper\b)/i.test(remainder) ||
+        (/^\s+[a-z]/i.test(remainder) && !/^\s+(?:with|extra|apply|save|coupon|when|prime|list|typical|at|for|after|before)\b/i.test(remainder))) {
+      return unavailable('The displayed unit or denominator is not supported.');
+    }
+    // Deliberately support English decimal-point notation only. Do not treat
+    // decimal commas, malformed grouping, signs, or zero as a comparable price.
+    if (!/^(?:0|[1-9]\d*|[1-9]\d{0,2}(?:,\d{3})+)(?:\.\d{1,4})?$/.test(rawAmount)) {
+      return unavailable('Unit-price number format is not supported.');
+    }
+    const amount = Number(rawAmount.replace(/,/g, ''));
+    if (!Number.isFinite(amount) || amount <= 0 || amount > Number.MAX_SAFE_INTEGER / 10000) {
+      return unavailable('A positive, reliable unit-price amount is required.');
+    }
+    const currencies = { $: 'USD', '€': 'EUR', '£': 'GBP' };
+    const currency = currencies[match[1]];
+    const activeSymbols = new Set(text.match(/[$€£¥₹]/g) || []);
+    if (!currency || activeSymbols.size !== 1 || /[a-z]$/i.test(prefix) ||
+        /\b(?:USD|EUR|GBP|CAD|AUD|NZD|HKD|SGD|JPY|INR)\s+$/i.test(prefix) ||
+        /\b(?:CAD|AUD|NZD|HKD|SGD|JPY|INR)\b|\b(?:CA|AU|NZ|HK|SG|US|C|A)\s*\$/i.test(text)) {
+      return unavailable('Unit-price currency is unsupported or ambiguous.');
+    }
+    const display = normalize(match[0]);
+    // The comparison keeps the same validated visible offer context. If the
+    // price reader could not retain this expression, do not discard conditions.
+    if (!price.includes(display)) return unavailable('Unit-price context is not reliably readable.');
+    return { unitPrice: { amount, currency, unit, display, context: price }, unitPriceReason: null };
+  }
+
   function findRating(card) {
     for (const control of card.querySelectorAll('[aria-label]')) {
       if (!isDisplayed(control)) continue;
@@ -253,6 +349,7 @@
   function parseCard(card) {
     const title = findTitle(card);
     const sponsorEvidence = sponsoredEvidence(card);
+    const price = findPrice(card);
     const details = [...new Set(Array.from(card.querySelectorAll('.title-differentiators, [data-cy="title-differentiators"], [data-cy="title-differentiator"]'))
       .map(displayedText).filter(Boolean))].join(' · ') || null;
     return {
@@ -261,7 +358,8 @@
       ...findBrand(card, title.title),
       sponsored: !!sponsorEvidence,
       sponsorEvidence,
-      price: findPrice(card),
+      price,
+      ...findUnitPrice(card, price),
       rating: findRating(card),
       ratingCount: findRatingCount(card),
       details

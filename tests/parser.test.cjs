@@ -208,3 +208,168 @@ test('hidden containers and detached nodes are not displayed', t => {
   assert.equal(parser.isDisplayed(document.createElement('span')), false);
   assert.equal(parser.isDisplayed(document.getElementById('ordinary')), true);
 });
+
+function unitFixture(t) {
+  const context = createDOM();
+  t.after(() => context.dom.window.close());
+  const card = context.document.getElementById('ordinary');
+  const region = card.querySelector('.a-price').parentElement;
+  region.dataset.cy = 'price-recipe';
+  const read = (markup, { currency = '$', before = '', after = '' } = {}) => {
+    region.innerHTML = `${before}<span class="a-price"><span class="a-offscreen">${currency}19.99</span><span aria-hidden="true">${currency}19.99</span></span>${markup}${after}`;
+    return context.parser.parseCard(card);
+  };
+  return { ...context, card, region, read };
+}
+
+test('an explicit displayed unit price retains its amount, unit and offer conditions without coupon arithmetic', t => {
+  const { read } = unitFixture(t);
+  const item = read('<span class="a-size-base">($0.32 / count)</span>', {
+    after: '<span>with Prime</span><div>Apply 10% coupon</div><div>Extra $2 off when you subscribe</div>'
+  });
+  assert.ok(item.unitPrice);
+  assert.equal(item.unitPrice.amount, 0.32);
+  assert.equal(item.unitPrice.currency, 'USD');
+  assert.equal(item.unitPrice.unit, 'count');
+  assert.equal(item.unitPrice.display, '$0.32 / count');
+  assert.equal(item.unitPrice.context, item.price);
+  assert.match(item.unitPrice.context, /with Prime.*10% coupon.*Extra \$2 off when you subscribe/);
+  assert.equal(item.unitPriceReason, null);
+});
+
+test('a visible unit amount in Amazon a-text-price markup is read once without using duplicate accessibility digits', t => {
+  const { read } = unitFixture(t);
+  const item = read('<span>(<span class="a-price a-text-price" style="text-decoration:none"><span class="a-offscreen">$0.50</span><span aria-hidden="true">$0.50</span></span> / Count)</span>');
+  assert.equal(item.unitPrice?.amount, 0.5);
+  assert.equal(item.unitPrice?.unit, 'count');
+  assert.equal(item.unitPrice.display.match(/\$0\.50/g).length, 1);
+});
+
+test('unit aliases normalize only the same measure and keep count, item, unit and fluid ounces distinct', t => {
+  const { read } = unitFixture(t);
+  for (const [displayed, canonical] of [
+    ['count', 'count'], ['items', 'item'], ['units', 'unit'],
+    ['feet', 'ft'], ['foot', 'ft'], ['ft', 'ft'], ['ounces', 'oz'], ['oz', 'oz'],
+    ['fluid ounce', 'fl oz'], ['fluid oz', 'fl oz'], ['fl. oz.', 'fl oz'],
+    ['pound', 'lb'], ['lbs', 'lb'], ['grams', 'g'], ['kilogram', 'kg'],
+    ['millilitres', 'ml'], ['ml', 'ml'], ['liters', 'l'], ['litre', 'l'], ['l', 'l']
+  ]) {
+    const item = read(`<span>($1.25 per ${displayed})</span>`);
+    assert.equal(item.unitPrice?.unit, canonical, `${displayed}: ${item.unitPriceReason}`);
+    assert.equal(item.unitPrice.amount, 1.25);
+  }
+});
+
+test('unit-price currencies remain distinct and ambiguous or prefixed dollar currencies are not guessed', t => {
+  const { read } = unitFixture(t);
+  for (const [symbol, currency] of [['$', 'USD'], ['€', 'EUR'], ['£', 'GBP']]) {
+    const item = read(`<span>(${symbol}1,234.50 / count)</span>`, { currency: symbol });
+    assert.equal(item.unitPrice?.currency, currency);
+    assert.equal(item.unitPrice?.amount, 1234.5);
+  }
+  for (const markup of ['(CA$0.50 / count)', '(CAD $0.50 / count)', '(¥0.50 / count)', '(€0.50 / count)']) {
+    const item = read(`<span>${markup}</span>`);
+    assert.equal(item.unitPrice, null, markup);
+    assert.ok(item.unitPriceReason);
+  }
+});
+
+test('missing unit information stays unavailable even when titles contain quantities or price-like text', t => {
+  const { read, card } = unitFixture(t);
+  card.querySelector('a h2').textContent = 'Pack of 20 — claimed $0.50 / count';
+  const item = read('');
+  assert.equal(item.unitPrice, null);
+  assert.match(item.unitPriceReason, /No supported displayed unit price/);
+});
+
+test('hidden, secondary and struck-through unit prices cannot produce a comparable value', t => {
+  const { read } = unitFixture(t);
+  for (const markup of [
+    '<span hidden>($0.10 / count)</span>',
+    '<span style="display:none">($0.10 / count)</span>',
+    '<span aria-hidden="true">($0.10 / count)</span>',
+    '<div data-cy="secondary-offer-recipe">($0.10 / count)</div>',
+    '<s>($0.10 / count)</s>',
+    '<span style="text-decoration:line-through">($0.10 / count)</span>',
+    '<span>(<span class="a-price a-text-price" data-a-strike="true"><span class="a-offscreen">$0.10</span><span aria-hidden="true">$0.10</span></span> / count)</span>',
+    '<s>$0.10</s> /count'
+  ]) {
+    const item = read(markup);
+    assert.equal(item.unitPrice, null, markup);
+    assert.ok(item.unitPriceReason);
+  }
+  const valid = read('<span>($0.50 / count)</span><s>($0.10 / count)</s><span hidden>($0.01 / count)</span>');
+  assert.equal(valid.unitPrice?.amount, 0.5, 'An excluded old/hidden unit price must not compete with the current one');
+});
+
+test('multiple displayed unit prices remain ambiguous even when their units, currencies or amounts match', t => {
+  const { read } = unitFixture(t);
+  for (const markup of [
+    '<span>($0.20 / count) ($0.30 / count)</span>',
+    '<span>($0.20 / count) ($0.20 / count)</span>',
+    '<span>($0.20 / count) ($0.10 / oz)</span>',
+    '<span>($0.20 / count) (£0.10 / count)</span>'
+  ]) {
+    const item = read(markup);
+    assert.equal(item.unitPrice, null);
+    assert.match(item.unitPriceReason, /Multiple/);
+  }
+});
+
+test('starting prices and ranges never contribute a misleading single unit-price endpoint', t => {
+  const { read } = unitFixture(t);
+  for (const before of ['From ', 'Starting at ', 'As low as ']) {
+    const item = read('<span>($0.32 / count)</span>', { before });
+    assert.equal(item.unitPrice, null, before);
+    assert.match(item.unitPriceReason, /Starting or ranged/);
+  }
+  for (const markup of ['($0.20–$0.30 / count)', '($0.20 to 0.30 / count)', '($0.20 / count – 0.30 / count)', '(0.20 – $0.30 / count)']) {
+    const item = read(`<span>${markup}</span>`);
+    assert.equal(item.unitPrice, null, markup);
+    assert.match(item.unitPriceReason, /Starting or ranged/);
+  }
+});
+
+test('unsupported denominator quantities and measures never join a normalized unit group', t => {
+  const { read } = unitFixture(t);
+  for (const denominator of ['100g', '100 g', '2 count', 'gallon', 'count pack', 'constructor', 'toString']) {
+    const item = read(`<span>($0.20 / ${denominator})</span>`);
+    assert.equal(item.unitPrice, null, denominator);
+    assert.ok(item.unitPriceReason);
+  }
+});
+
+test('malformed, localized, zero or signed unit-price numbers remain unavailable', t => {
+  const { read } = unitFixture(t);
+  for (const amount of ['0', '0.00', '-0.20', '+0.20', '0,20', '1.234,56', '12,34.56', '1..20', '00.20', '.20', '0.12345']) {
+    const item = read(`<span>($${amount} / count)</span>`);
+    assert.equal(item.unitPrice, null, amount);
+    assert.ok(item.unitPriceReason);
+  }
+  assert.equal(read('<span>($0.0125 / count)</span>').unitPrice?.amount, 0.0125);
+});
+
+test('signs before currency and per-unit savings cannot become the lowest purchase price', t => {
+  const { read } = unitFixture(t);
+  for (const expression of [
+    '-$0.20 / count', '−$0.20 / count', '+ $0.20 / count',
+    'Save $0.20 / count', 'Save up to $0.20 / count', 'Savings: $0.20 / count',
+    'Coupon of $0.20 / count', '$0.20 / count off', '$0.20 / count savings'
+  ]) {
+    const item = read(`<span>(${expression})</span>`);
+    assert.equal(item.unitPrice, null, expression);
+    assert.ok(item.unitPriceReason);
+  }
+  const valid = read('<span>($0.50 / count)</span><span>Save 10% with coupon</span>');
+  assert.equal(valid.unitPrice?.amount, 0.5, 'A later coupon does not change an actual displayed unit price');
+  assert.match(valid.unitPrice.context, /Save 10% with coupon/);
+});
+
+test('compound denominators cannot be partially read as a supported single unit', t => {
+  const { read } = unitFixture(t);
+  for (const denominator of ['oz / count', 'count-pack', 'count - pack', 'oz/count', 'count per pack', 'count + pack', 'count * pack', 'count×pack', 'count · pack', 'count & pack']) {
+    const item = read(`<span>($0.20 / ${denominator})</span>`);
+    assert.equal(item.unitPrice, null, denominator);
+    assert.match(item.unitPriceReason, /denominator/);
+  }
+});

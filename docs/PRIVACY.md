@@ -1,6 +1,6 @@
 # Shopper Lens privacy and site access
 
-Applies to version 0.1.2. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection. The third filter and changed defaults introduce no new permissions or storage.
+Applies to version 0.1.3. Shopper Lens processes supported search-page information locally in the browser. It has no backend, analytics, account system, external product API, advertising service, or affiliate link injection. Unit-price summaries introduce no new permissions, network requests, or storage. They compare explicitly displayed unit prices locally across supported loaded cards, including cards hidden by Shopper Lens; no additional pages or products are fetched.
 
 ## Information used
 

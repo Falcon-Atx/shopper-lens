@@ -1,7 +1,8 @@
 (() => {
   'use strict';
   const P = globalThis.ShopperLensParser;
-  if (!P || document.getElementById('shopper-lens-launcher')) return;
+  const U = globalThis.ShopperLensUnits;
+  if (!P || !U || document.getElementById('shopper-lens-launcher')) return;
   const demo = ['localhost', '127.0.0.1'].includes(location.hostname);
   if (!demo && (location.hostname !== 'www.amazon.com' || !/^\/s(?:\/|$)/.test(location.pathname))) return;
 
@@ -40,6 +41,12 @@
     #comparison { margin-top:16px; } .table-scroll { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-size:12px; } caption { text-align:left; font-size:16px; font-weight:700; margin:0 0 10px; }
     th,td { padding:10px; min-width:145px; max-width:230px; text-align:left; vertical-align:top; border:1px solid #d7dfd5; overflow-wrap:anywhere; } th { background:#edf2e9; } th:first-child { min-width:110px; } td p { margin:0 0 8px; }
     .foot { font-size:11px; margin:12px 0 0; color:#53665b; } #close { border:0; padding:2px 6px; }
+    .unit-category { margin:12px 0; padding:10px; background:#edf2e9; border-radius:8px; }
+    .unit-category h3 { font-size:13px; margin:0 0 4px; } .unit-category p { margin:4px 0; }
+    .unit-group { margin-top:9px; padding-top:8px; border-top:1px solid #c8d4c8; }
+    .unit-value { font-size:15px; font-weight:700; } .unit-meta, .unit-context { font-size:11px; }
+    .unit-winner { margin-top:6px; overflow-wrap:anywhere; } .unit-winner a { display:block; }
+    .unit-category details { margin-top:6px; padding-top:6px; } .unit-category ul { padding-left:18px; }
   </style>
   <section class="panel" aria-label="Shopper Lens controls">
     <header><div><p class="eyebrow">A clearer view</p><h2>Shopper Lens</h2></div><button id="close" aria-label="Minimize Shopper Lens">✕</button></header>
@@ -54,12 +61,17 @@
     <p class="muted" style="font-size:12px">Filters affect recognized results only. Dimmed items brighten on hover or keyboard focus.</p>
     <div class="actions"><button class="primary" id="compare">Compare selected (0/4)</button><button id="restore">Restore all</button><button id="pause">Pause on this page</button></div>
     <div id="status" role="status"></div>
+    <details id="unit-prices" open><summary>Lowest displayed unit prices</summary>
+      <p class="muted">All loaded supported cards, including those hidden by your filters. Each currency and unit is compared separately. Products may differ; lowest unit price does not mean best quality or overall value. Offer conditions still apply.</p>
+      <div id="unit-summary-content"></div>
+    </details>
     <details><summary>What do the labels mean?</summary>
       <p><strong>Organic / unverified:</strong> standard product cards with neither a detected Sponsored disclosure nor a verified Amazon-brand match. This includes uncertain title-only brand mentions. Missing evidence does not establish an organic placement or independent ownership.</p>
       <p><strong>Sponsored:</strong> the page displays a Sponsored disclosure in this card or ad block. Hiding a block hides its whole placement. A missing label is not proof of an unsponsored result.</p>
       <p><strong>Amazon-owned brand:</strong> a separate displayed brand field exactly matches Amazon Basics (including AmazonBasics) or Amazon Essentials. Amazon identifies these as private brands in its <a href="https://press.aboutamazon.com/uk/2025/3/get-ready-to-shop-with-amazon-spring-deal-days" target="_blank" rel="noopener noreferrer">March 2025 release</a>. Registry reviewed September 2026. This verifies the brand relationship, not seller identity or product authenticity.</p>
       <p><strong>Brand uncertain:</strong> a title mentions a known brand but does not supply a supported separate brand field. These results stay outside the brand filter. Other brands are not checked; no label means unknown, not independent.</p>
       <p><strong>Comparison:</strong> copies the displayed listing price/context, star rating, rating count, and title details. Prices can vary by variant, delivery, tax, coupon, or subscription. Ratings are page claims, not a quality check. Pack sizes and specifications are not normalized or independently tested. No value score or recommendation is calculated.</p>
+      <p><strong>Unit-price summaries:</strong> use explicit, readable unit prices from standard cards on this loaded page, including cards hidden by Shopper Lens. Different currencies and units stay separate; no amounts are calculated from titles or converted. Missing, ambiguous, ranged, and unsupported values are skipped. Coupons and subscriptions are not calculated; the displayed offer context accompanies the lowest listings. Ties remain ties. Sponsored Amazon-brand cards can appear in both matching categories.</p>
       <p>English Amazon.com desktop search only. Standard cards are comparable; recognized ad blocks are filterable. Some carousels, iframes, new layouts, and offscreen carousel slides may be missed. Results are never reordered.</p>
     </details>
     <div id="comparison" hidden></div>
@@ -140,6 +152,44 @@
     if (removed) message(`${removed} hidden selection${removed === 1 ? '' : 's'} removed from comparison.`);
     updateSummary(); if (state.comparing) renderComparison();
   }
+  let unitSummarySignature;
+  function renderUnitSummary(records) {
+    const output = $('#unit-summary-content', panel);
+    const categories = U.summarize(records.map(r => ({ kind: r.kind, data: r.data, hiddenByLens: r.element.classList.contains('sl-hidden') })));
+    const signature = JSON.stringify([state.paused, categories]);
+    if (signature === unitSummarySignature) return;
+    unitSummarySignature = signature;
+    output.replaceChildren();
+    if (state.paused) { output.append(make('p', 'Paused. Resume to read unit prices from the page.')); return; }
+    const listing = winner => {
+      const row = make('div', null, { class: 'unit-winner' });
+      const link = make('a', winner.title || 'Original listing', { href: winner.url, target: '_blank', rel: 'noopener noreferrer' });
+      row.append(link);
+      if (winner.hiddenByLens) row.append(make('p', 'Hidden by your filters; original listing remains available.', { class: 'unit-meta muted' }));
+      row.append(make('p', `Displayed offer: ${winner.context || 'Check conditions in the original listing.'}`, { class: 'unit-context' }));
+      return row;
+    };
+    for (const category of categories) {
+      const section = make('section', null, { class: 'unit-category', 'data-unit-category': category.id, 'aria-label': `${category.label} unit prices` });
+      section.append(make('h3', category.label));
+      section.append(make('p', `${category.priced} of ${category.total} cards with readable unit prices · ${category.missing} unavailable`, { class: 'unit-meta muted' }));
+      if (!category.groups.length) section.append(make('p', category.total ? 'No reliable unit price displayed.' : 'No supported product cards in this category.'));
+      for (const group of category.groups) {
+        const row = make('div', null, { class: 'unit-group' });
+        row.append(make('p', `${group.display} · lowest displayed`, { class: 'unit-value' }));
+        row.append(make('p', `${group.currency} per ${group.unit} · ${group.eligibleCount} eligible card${group.eligibleCount === 1 ? '' : 's'}${group.eligibleCount === 1 ? ' (only one available)' : ''}`, { class: 'unit-meta muted' }));
+        if (group.winners.length === 1) row.append(listing(group.winners[0]));
+        else {
+          const ties = make('details'); ties.append(make('summary', `${group.winners.length} listings tied for lowest`));
+          const list = make('ul');
+          for (const winner of group.winners) { const item = make('li'); item.append(listing(winner)); list.append(item); }
+          ties.append(list); row.append(ties);
+        }
+        section.append(row);
+      }
+      output.append(section);
+    }
+  }
   function updateSummary() {
     const records = [...state.records.values()];
     const products = records.filter(r => r.kind === 'product');
@@ -148,6 +198,7 @@
     if (!products.length && !state.paused) $('#stats', panel).textContent += ' — No comparable cards found; this layout may be unsupported or still loading.';
     $('#compare', panel).textContent = `Compare selected (${state.selected.size}/4)`;
     $('#compare', panel).disabled = state.selected.size < 2;
+    renderUnitSummary(records);
   }
   function renderComparison() {
     const output = $('#comparison', panel); output.replaceChildren(); output.hidden = !state.comparing;
@@ -165,6 +216,7 @@
     const specs = [
       ['Product', d => d.title], ['Brand field', d => d.brandText],
       ['Listing price / context', d => d.price], ['Rating', d => d.rating], ['Rating count', d => d.ratingCount],
+      ['Unit price (displayed)', d => d.unitPrice?.display || `Not reliably displayed${d.unitPriceReason ? ` — ${d.unitPriceReason}` : ''}`],
       ['Title details (unverified)', d => d.details],
       ['Placement', d => d.sponsored ? `Sponsored — ${d.sponsorEvidence}` : 'No disclosure detected; unverified'],
       ['Amazon ownership', d => d.ownedBrand ? `Brand match: ${d.ownedBrand}. ${d.ownershipEvidence}` : d.ownershipEvidence || 'Not verified by this page and registry']
