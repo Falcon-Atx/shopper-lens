@@ -4,7 +4,7 @@ Shopper Lens is a small Chrome extension for English desktop Amazon.com searches
 
 Everything runs locally in the browser. There is no account to create, browsing-history collection, analytics, backend, or affiliate link injection. This is an independent project, unaffiliated with Amazon.
 
-Version **0.1.3** adds lowest displayed unit prices per category. All 54 automated tests pass, and the unpacked extension was checked on live battery, cable, and clothing searches; see the [verification record](docs/VERIFICATION.md) for evidence and limits. This extension has **not** been submitted to the Chrome Web Store.
+Version **0.1.4** places lowest displayed unit prices directly beside the category selectors. All 54 automated tests pass, and this layout update was verified in Chrome on clothing and cable searches. Version 0.1.3's price summaries also covered batteries; see the [verification record](docs/VERIFICATION.md) for evidence and limits. This extension has **not** been submitted to the Chrome Web Store.
 
 Source repository: [Falcon-Atx/shopper-lens](https://github.com/Falcon-Atx/shopper-lens).
 
@@ -39,7 +39,7 @@ The controls appear in this order and start with these defaults on every page re
 
 ## Lowest displayed unit prices
 
-The expanded **Lowest displayed unit prices** section summarizes each of the three categories using all supported product cards already loaded on the page, **including cards hidden by Shopper Lens**. Filtering does not remove their prices from this summary. Pausing stops the summary until you resume.
+Each category shows its **lowest displayed unit prices beside the Show / Dim / Hide selector**, with a separate line for each currency and unit. The expanded **Lowest displayed unit prices** section below keeps product links, ties, and offer conditions. Both views use all supported product cards already loaded on the page, **including cards hidden by Shopper Lens**. Filtering does not remove their prices. Pausing replaces the compact prices with “Paused” until you resume.
 
 Each currency and unit has its own lowest displayed amount. For example, USD per count and USD per foot are separate comparisons. The summary links the lowest listings, keeps equal-price ties, shows offer conditions, marks hidden listings, and reports how many cards supplied readable unit prices. Sponsored Amazon-brand cards can belong to both categories.
 

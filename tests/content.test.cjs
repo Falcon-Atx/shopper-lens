@@ -314,7 +314,7 @@ function unitCategory(panel, id) {
 }
 
 test('unit summaries explain missing data without inventing zero prices or counting ad blocks', async t => {
-  const { panel } = await start(t);
+  const { document, panel } = await start(t);
   assert.equal(panel.querySelector('#unit-prices').open, true);
   assert.match(panel.querySelector('#unit-prices').textContent, /including those hidden by your filters/i);
   assert.match(panel.querySelector('#unit-prices').textContent, /does not mean best quality or overall value/i);
@@ -324,7 +324,20 @@ test('unit summaries explain missing data without inventing zero prices or count
   for (const id of ['organic', 'sponsored', 'owned']) {
     assert.match(unitCategory(panel, id).textContent, /No reliable unit price displayed/);
     assert.equal(unitCategory(panel, id).querySelectorAll('.unit-value,a').length, 0);
+    assert.equal(panel.querySelector(`#${id}-price`).textContent.trim(), 'Unit price unavailable');
+    assert.equal(panel.querySelector(`#${id}-price`).classList.contains('filter-price'), true);
   }
+  for (const [id, expected] of [['organic', 'Organic / unverified'], ['sponsored', 'Sponsored placements'], ['owned', 'Verified Amazon brands']]) {
+    const select = panel.querySelector(`#${id}`);
+    assert.equal(select.labels.length, 1);
+    const label = select.labels[0].cloneNode(true);
+    label.querySelectorAll('select,[aria-hidden="true"]').forEach(element => element.remove());
+    assert.equal(label.textContent.trim(), expected, 'Inline prices must not replace or pollute the category label');
+  }
+  document.getElementById('owned').remove();
+  document.getElementById('title-only').remove();
+  await until(() => panel.querySelector('#owned-price').textContent.trim() === 'No supported cards');
+  assert.equal(panel.querySelector('#sponsored-price').textContent.trim(), 'No supported cards', 'A remaining ad block does not count as a product with a unit price');
 });
 
 test('unit summaries retain tied original listings, offer context and hidden brand winners', async t => {
@@ -352,10 +365,28 @@ test('unit summaries retain tied original listings, offer context and hidden bra
   assert.match(owned.querySelector('.unit-value').textContent, /\$0\.25\s*\/\s*count/);
   assert.match(owned.textContent, /Hidden by your filters/);
   assert.equal(owned.querySelector('a').href, 'https://www.amazon.com/dp/DEMO000002');
+  assert.equal(panel.querySelector('#owned-price').textContent.trim(), '$0.25 / count (USD) · only one available', 'Inline price includes filter-hidden products and the one-candidate limitation');
   const sponsored = unitCategory(panel, 'sponsored');
   assert.match(sponsored.textContent, /1 of 1 cards with readable unit prices/);
   assert.match(sponsored.querySelector('.unit-value').textContent, /\$0\.75\s*\/\s*count/);
   assert.doesNotMatch(sponsored.textContent, /\$0\.01/);
+  assert.equal(panel.querySelector('#sponsored-price').textContent.trim(), '$0.75 / count (USD) · only one available');
+  for (const [id, symbol, unit] of [['SUMM000001', '€', 'count'], ['SUMM000002', '$', 'item']]) {
+    const card = document.getElementById('ordinary').cloneNode(true);
+    card.id = id;
+    card.dataset.asin = id;
+    card.querySelectorAll('[data-shopper-lens]').forEach(element => element.remove());
+    card.querySelector('[data-cy="title-recipe"] a').href = `https://www.amazon.com/dp/${id}`;
+    card.querySelector('a h2').textContent = `Synthetic ${symbol} per ${unit} example`;
+    card.querySelector('[data-cy="price-recipe"]').innerHTML = `<span class="a-price"><span class="a-offscreen">${symbol}19.99</span><span aria-hidden="true">${symbol}19.99</span></span><span class="a-size-base">(${symbol}0.10 / ${unit})</span>`;
+    document.querySelector('.s-search-results').append(card);
+  }
+  await until(() => unitCategory(panel, 'organic').querySelectorAll('.unit-group').length === 3);
+  const inline = panel.querySelector('#organic-price').textContent;
+  for (const value of ['€0.10 / count (EUR)', '$0.50 / count (USD)', '$0.10 / item (USD)']) {
+    assert.ok(inline.includes(value), `Inline summary must retain separate currency/unit minimum: ${value}`);
+  }
+  assert.equal(unitCategory(panel, 'organic').querySelectorAll('.unit-winner').length, 4, 'Adding separate units must preserve both count-price ties');
 });
 
 test('unit summaries react to price edits, retain filtered winners, and clear while paused', async t => {
@@ -363,24 +394,29 @@ test('unit summaries react to price edits, retain filtered winners, and clear wh
   const ordinaryUnit = addDisplayedUnitPrice(document, 'ordinary', '0.50');
   addDisplayedUnitPrice(document, 'third-party', '0.40');
   await until(() => unitCategory(panel, 'organic').querySelector('.unit-winner a')?.href.endsWith('/DEMO000003'));
+  assert.equal(panel.querySelector('#organic-price').textContent.trim(), '$0.40 / count (USD)');
   ordinaryUnit.textContent = '($0.20 / count)';
   await until(() => unitCategory(panel, 'organic').querySelector('.unit-winner a')?.href.endsWith('/DEMO000006'), 'Changing a displayed unit amount must update the lowest listing');
   assert.match(unitCategory(panel, 'organic').querySelector('.unit-value').textContent, /\$0\.20/);
+  assert.equal(panel.querySelector('#organic-price').textContent.trim(), '$0.20 / count (USD)');
   setSelect(window, panel, 'organic', 'hide');
   assert.equal(document.getElementById('ordinary').classList.contains('sl-hidden'), true);
   assert.equal(unitCategory(panel, 'organic').querySelector('.unit-winner a').href, 'https://www.amazon.com/dp/DEMO000006');
   assert.match(unitCategory(panel, 'organic').textContent, /2 of 4 cards with readable unit prices/);
   assert.match(unitCategory(panel, 'organic').textContent, /Hidden by your filters/);
+  assert.equal(panel.querySelector('#organic-price').textContent.trim(), '$0.20 / count (USD)', 'Hiding the category must not hide its inline minimum');
   button(panel, /^Restore all$/i).click();
   assert.doesNotMatch(unitCategory(panel, 'organic').textContent, /Hidden by your filters/);
   button(panel, /^Pause on this page$/i).click();
   const output = panel.querySelector('#unit-summary-content');
   assert.match(output.textContent, /Paused/);
   assert.equal(output.querySelectorAll('a,.unit-value,[data-unit-category]').length, 0, 'Pause must not leave old price summaries visible');
+  for (const id of ['organic', 'sponsored', 'owned']) assert.equal(panel.querySelector(`#${id}-price`).textContent.trim(), 'Paused');
   ordinaryUnit.textContent = '($0.30 / count)';
   button(panel, /^Resume on this page$/i).click();
   await until(() => /\$0\.30/.test(unitCategory(panel, 'organic')?.querySelector('.unit-value')?.textContent || ''), 'Resume must read current prices rather than restore stale summary data');
   assert.equal(unitCategory(panel, 'organic').querySelector('.unit-winner a').href, 'https://www.amazon.com/dp/DEMO000006');
+  assert.equal(panel.querySelector('#organic-price').textContent.trim(), '$0.30 / count (USD)');
 });
 
 test('unsupported pages are left alone', async t => {

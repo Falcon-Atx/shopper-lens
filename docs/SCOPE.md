@@ -1,4 +1,4 @@
-# Shopper Lens release scope — version 0.1.3
+# Shopper Lens release scope — version 0.1.4
 
 Shopper Lens helps shoppers notice observable sponsored placements and known Amazon brands, control their prominence, and compare a few products using information displayed on the current search page. The shopper can change or reverse every filter. The extension does not recommend a winner or explain Amazon's ranking motives.
 
@@ -57,6 +57,8 @@ The Amazon page itself still has its ordinary network behavior. Following an ori
 
 ## Observable definition of done
 
+For 0.1.4, each category's lowest displayed unit prices must appear next to its selector, with separate units/currencies, explicit missing and paused states, and unchanged original category names for assistive technology. Compact and detailed summaries must agree and remain available when results are hidden. Tests and installed Chrome layout checks must verify this update.
+
 For 0.1.3, explicit unit-price extraction and per-category minima must be covered by tests and actual installed Chrome checks. Unit summaries must remain available under filters, distinguish units/currencies, preserve offer conditions and ties, and state missing data. Previous-version observations alone do not verify this update.
 
 1. The source package loads unpacked in Chrome without manifest or extension errors and runs on supported live search pages.
@@ -69,7 +71,7 @@ For 0.1.3, explicit unit-price extraction and per-category minima must be covere
 8. Files and Git history are reviewed for secrets, personal data, private notes, generated artifacts, and unrelated assets before a Public repository is created and source is pushed to the user's personal GitHub account. The final repository URL is verified.
 9. `HANDOFF.md` reflects each meaningful milestone and names the exact next unfinished action until all criteria are met.
 
-These criteria define completion; their presence here does not assert they have already passed. The recorded version 0.1.1 live checks are historical and do not establish version 0.1.3 verification. Consult the [verification record](VERIFICATION.md) and `HANDOFF.md` for checks of the current version.
+These criteria define completion; their presence here does not assert they have already passed. Earlier-version live checks are historical. Consult the [verification record](VERIFICATION.md) and `HANDOFF.md` for checks of the current version.
 
 ## Expected limitations
 

@@ -1,6 +1,17 @@
 # Verification record
 
-Versions 0.1.0–0.1.3. Checks began September 19, 2026. This record distinguishes observed behavior from untested coverage.
+Versions 0.1.0–0.1.4. Checks began September 19, 2026. This record distinguishes observed behavior from untested coverage.
+
+## Version 0.1.4 update
+
+Compact lowest displayed unit prices now appear beside their category selectors. Every currency/unit group has its own line; single-candidate groups are qualified, and missing/no-card states remain explicit. The detailed section keeps original links, ties, and offer conditions. Selectors retain their original accessible category names and reference the adjacent price as a description. No parser, aggregation, permissions, or storage behavior changes.
+
+- All 54 tests and syntax checks passed on September 23. Existing integration cases now also check inline currency/unit separation, hidden winners, reactive price edits, missing versus empty categories, unchanged selector labels, and Pause/Resume.
+- The user confirmed 0.1.4 after reloading. Installed Chrome on a clothing search showed Organic / unverified $3.58/count and Sponsored $3.08/count beside their selectors, matching the detailed summary. The verified brand lacked an explicit unit price and showed “Unit price unavailable.” These are historical observations, not current prices.
+- Hiding all three categories removed 66 recognized placements while all three compact price/missing states stayed identical. Pause changed all three to “Paused”; Resume restored the values.
+- A live cable search showed two separate lines beside each of the first two selectors: per-count and per-foot minima. The empty brand category showed “No supported cards.” Screenshot and DOM geometry inspection found no row overflow or overlap with the selectors at the tested desktop viewport.
+- The local demo rendered compact unavailable states. It remains a synthetic demonstration, separate from the installed checks above. Other viewport sizes, locales, and layouts remain unverified.
+- The final update diff contains only source, tests, version metadata, and public documentation. No permissions, dependencies, storage, networking, or private files were introduced. Prior history review is recorded under 0.1.3.
 
 ## Version 0.1.3 update
 

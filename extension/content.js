@@ -34,7 +34,7 @@
     .panel.wide { width:min(980px, calc(100vw - 32px)); }
     header { display:flex; align-items:start; gap:12px; justify-content:space-between; } h2 { font-size:22px; line-height:1.2; margin:0; letter-spacing:-.5px; } .eyebrow { font-size:10px; text-transform:uppercase; letter-spacing:1.6px; margin:0 0 7px; color:#56685f; }
     .lead { color:#53665b; margin-bottom:16px; } .filters { display:grid; gap:10px; margin:15px 0; }
-    label.filter { display:flex; align-items:center; justify-content:space-between; gap:16px; } select { border:1px solid #b7c8be; border-radius:7px; padding:6px; background:white; }
+    .filter { display:flex; align-items:center; justify-content:space-between; gap:12px; } .filter-copy { min-width:0; } .filter-price { font-size:13px; font-weight:650; color:#096449; margin-top:3px; overflow-wrap:anywhere; } .filter-price-note { font-size:11px; font-weight:400; color:#53665b; } select { flex-shrink:0; border:1px solid #b7c8be; border-radius:7px; padding:6px; background:white; }
     .actions { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; } .primary { color:white; background:#17634e; border-color:#17634e; } .primary:hover { background:#104c3c; }
     .stats { font-variant-numeric:tabular-nums; padding:10px 12px; border-radius:8px; background:#edf2e9; font-size:12px; }
     #status { min-height:20px; font-size:12px; } details { border-top:1px solid #d7dfd5; padding:12px 0 0; margin:12px 0; font-size:12px; } summary { cursor:pointer; font-weight:600; }
@@ -53,10 +53,11 @@
     <p class="lead">See the placement. Make your own comparison.</p>
     <div class="stats" id="stats" aria-live="polite">Looking for supported results…</div>
     <div class="filters">
-      <label class="filter" for="organic">Organic / unverified<select id="organic" aria-describedby="organic-help"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
-      <label class="filter" for="sponsored">Sponsored placements<select id="sponsored"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
-      <label class="filter" for="owned">Verified Amazon brands<select id="owned"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></label>
+      <div class="filter"><div class="filter-copy"><label for="organic">Organic / unverified</label><div id="organic-price" class="filter-price"></div></div><select id="organic" aria-describedby="organic-price unit-price-help organic-help"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></div>
+      <div class="filter"><div class="filter-copy"><label for="sponsored">Sponsored placements</label><div id="sponsored-price" class="filter-price"></div></div><select id="sponsored" aria-describedby="sponsored-price unit-price-help"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></div>
+      <div class="filter"><div class="filter-copy"><label for="owned">Verified Amazon brands</label><div id="owned-price" class="filter-price"></div></div><select id="owned" aria-describedby="owned-price unit-price-help"><option value="show">Show</option><option value="dim">Dim</option><option value="hide">Hide</option></select></div>
     </div>
+    <p id="unit-price-help" class="muted" style="font-size:12px">Lowest displayed unit prices, including hidden results. Units stay separate. Product links and offer conditions are below.</p>
     <p id="organic-help" class="muted" style="font-size:12px">Organic / unverified: no sponsored disclosure or verified Amazon brand detected. This is not proof that a result is organic or independent.</p>
     <p class="muted" style="font-size:12px">Filters affect recognized results only. Dimmed items brighten on hover or keyboard focus.</p>
     <div class="actions"><button class="primary" id="compare">Compare selected (0/4)</button><button id="restore">Restore all</button><button id="pause">Pause on this page</button></div>
@@ -160,7 +161,10 @@
     if (signature === unitSummarySignature) return;
     unitSummarySignature = signature;
     output.replaceChildren();
-    if (state.paused) { output.append(make('p', 'Paused. Resume to read unit prices from the page.')); return; }
+    if (state.paused) {
+      for (const id of filterIds) $('#'+id+'-price', panel).textContent = 'Paused';
+      output.append(make('p', 'Paused. Resume to read unit prices from the page.')); return;
+    }
     const listing = winner => {
       const row = make('div', null, { class: 'unit-winner' });
       const link = make('a', winner.title || 'Original listing', { href: winner.url, target: '_blank', rel: 'noopener noreferrer' });
@@ -170,6 +174,14 @@
       return row;
     };
     for (const category of categories) {
+      const inline = $('#'+category.id+'-price', panel);
+      inline.replaceChildren();
+      if (!category.groups.length) inline.append(make('span', category.total ? 'Unit price unavailable' : 'No supported cards', { class: 'filter-price-note' }));
+      for (const group of category.groups) {
+        const value = make('div', `${group.display} (${group.currency})`, { class: 'filter-price-value' });
+        if (group.eligibleCount === 1) value.append(make('span', ' · only one available', { class: 'filter-price-note' }));
+        inline.append(value);
+      }
       const section = make('section', null, { class: 'unit-category', 'data-unit-category': category.id, 'aria-label': `${category.label} unit prices` });
       section.append(make('h3', category.label));
       section.append(make('p', `${category.priced} of ${category.total} cards with readable unit prices · ${category.missing} unavailable`, { class: 'unit-meta muted' }));
