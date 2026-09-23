@@ -3,11 +3,11 @@
 Maintain Shopper Lens, a local Manifest V3 extension for English desktop Amazon.com search. The completed first release provides evidence-based labels, reversible filters, comparison, tests, live Chrome verification, documentation, and public source. The current requested update adds lowest displayed unit prices per category and explains public distribution. Done means conservative explicit-unit extraction, minima grouped by currency/unit across all loaded supported cards including Lens-hidden cards, correct ties/missing values/conditions, meaningful tests, updated documentation, installed Chrome verification, and reviewed public source.
 
 # Current state
-- Version 0.1.3 implementation and installed Chrome verification are complete: lowest displayed unit-price summaries per filter category, including products hidden by Shopper Lens. This follows the user's explicit confirmation that prices should remain available regardless of filtering. Public publication is the remaining step.
+- Version 0.1.3 is complete and public: lowest displayed unit-price summaries per filter category, including products hidden by Shopper Lens. This follows the user's explicit confirmation that prices should remain available regardless of filtering.
 - `extension/unit-summary.js` aggregates explicit prices by currency and unit without conversions. The open summary in `extension/content.js` exposes winning original links, full offer context, ties, coverage counts, hidden-result notes, and unavailable values. Comparison has a separate unit-price row.
 - Parser, summary, and UI implementation now pass all 54 tests and syntax checks. Independent review found and fixed two false-minimum risks: negative/savings unit amounts and partially accepted compound denominators. Added regressions preserve real unit prices with later coupon conditions. Script wiring, manifest, package metadata, fixture, and demo server include the new module. No new permissions or persistent storage.
 - `docs/PUBLISHING.md` explains already-public GitHub distribution and current Chrome Web Store preparation. No store upload, payment, agreement, or submission has been performed. Store images/icons are still absent.
-- Public version 0.1.2 remains at https://github.com/Falcon-Atx/shopper-lens; the verified 0.1.3 changes are currently uncommitted. GitHub CLI renewal succeeded.
+- Version 0.1.3 source and documentation are published at https://github.com/Falcon-Atx/shopper-lens. GitHub reports PUBLIC visibility and the remote `main` matched implementation commit `795aaaa485a3c5ab7fcfe7afec4f89de295b36f9`. A tracked-source ZIP is available alongside the local project as `shopper-lens-v0.1.3.zip`; refresh it from final HEAD after this handoff commit.
 
 # Decisions and assumptions
 - Read the supplied constitution first. The video is problem context based on the supplied timestamped notes; direct retrieval failed. Ranking-motive allegations are not extension claims.
@@ -30,7 +30,7 @@ Maintain Shopper Lens, a local Manifest V3 extension for English desktop Amazon.
 - Tracked source, lockfile, fixtures, documentation, and Git history were reviewed for secrets/private files before publication, with no findings. No private page captures or account credentials are included. The final documentation review and targeted scan of all 22 tracked files and 56 historical blobs found no secrets/private-file matches.
 
 # Blockers
-- None. Manual reload is complete and GitHub CLI renewal succeeded. Chrome Web Store submission remains outside scope; account agreements, fees, and store assets have not been handled.
+- None for the completed extension and public source release. Chrome Web Store submission remains outside scope; account agreements, fees, and store assets have not been handled.
 
 # Exact next action
-- Review the final documentation diff, commit and push version 0.1.3 to the existing public repository, verify the remote commit and visibility, and create the source ZIP. Then record publication and clear temporary CLI credentials.
+- No product action remains for 0.1.3. Finish routine handoff publication/archive refresh and clear temporary CLI credentials if the current session has not yet done so. On a later session inspect actual state and act on the next user-requested change. For a requested store release, start with `docs/PUBLISHING.md`; do not infer authorization for payments or agreements.

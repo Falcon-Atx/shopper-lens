@@ -25,6 +25,8 @@ The user reloaded the unpacked extension, and its new content-script summary was
 
 An actual priced verified-brand winner did not occur in these sampled live pages; hidden-brand minima are covered by synthetic integration tests. The extension-manager error list remains inaccessible to automation. These checks do not establish other locales, languages, currencies, mobile layouts, or future Amazon layouts. The public-distribution guide is in [PUBLISHING.md](PUBLISHING.md); no Chrome Web Store submission has occurred. Earlier results below remain historical.
 
+Version 0.1.3 implementation and documentation were pushed as `795aaaa485a3c5ab7fcfe7afec4f89de295b36f9`; the remote `main` hash matched and GitHub reported PUBLIC visibility. Final handoff/documentation updates follow on the same branch. The downloadable source ZIP contains only tracked project files, with no authentication files or local page captures.
+
 ## Version 0.1.2 update
 
 The requested Organic / unverified control appears before Sponsored placements and Verified Amazon brands. It includes only standard cards with neither supported sponsorship evidence nor a verified brand match. It does not certify organic ranking or independence. Defaults are Show / Dim / Hide respectively; Restore all sets all three to Show, and reloading returns to the defaults. No original products are reordered, and permissions and local-only processing are unchanged.
